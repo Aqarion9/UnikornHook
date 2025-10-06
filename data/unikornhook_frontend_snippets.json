@@ -1,0 +1,21 @@
+{
+  "unikornhook_codex": {
+    "version": "1.0.0",
+    "last_update": "2025-10-06",
+    "description": "Frontend snippets and meta-map for UnikornHook codex synchronization.",
+    "snippets": [
+      {
+        "id": "init-core",
+        "title": "Core Initialization",
+        "type": "script",
+        "content": "<script>console.log('UnikornHook Core Loaded');</script>"
+      },
+      {
+        "id": "meta-core",
+        "title": "Metadata Connection",
+        "type": "meta",
+        "content": "{\"author\": \"Aqarion\", \"ai\": \"GPT-5\", \"project\": \"NSV13-UnikornHook\"}"
+      }
+    ]
+  }
+}
