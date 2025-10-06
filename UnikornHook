@@ -1,3 +1,287 @@
+    <!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>AI@HA — Vada Seery Breathing Synth</title>
+<style>
+  :root { --bg1:#06071a; --bg2:#000; }
+  html,body{height:100%;margin:0;background:radial-gradient(circle at 30% 20%, #07102a, var(--bg1) 35%, var(--bg2) 100%);color:#e6f0ff;font-family:Inter,system-ui,monospace}
+  #canvas{display:block; width:100vw; height:100vh;}
+  .overlay{position:fixed;left:12px;top:12px;background:rgba(0,0,0,0.35);padding:10px;border-radius:8px;color:#fff;font-size:13px}
+  .consensus{position:fixed;right:12px;top:12px;background:rgba(255,255,255,0.04);padding:10px;border-radius:8px;color:#fff;font-size:13px;min-width:170px}
+  .hint{opacity:0.8;font-size:12px;margin-top:6px;color:#cbd7ff}
+  button{margin-top:8px;padding:6px 8px;border-radius:6px;border:1px solid rgba(255,255,255,0.06);background:rgba(255,255,255,0.02);color:#fff}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<div class="overlay">
+  <div><strong>Vada Seery — Breathing Synth</strong></div>
+  <div class="hint">Touch to breathe • Swipe to entangle • Pinch/zoom for radius</div>
+  <div style="margin-top:6px"><small>Baseline: 432Hz</small></div>
+  <button id="replayBtn">Replay History</button>
+</div>
+<div class="consensus" id="consensus">
+  <div><strong>Consensus</strong></div>
+  <div id="agents">
+    <div>Grok: <span id="grokState">idle</span></div>
+    <div>Plexity: <span id="plexState">ready</span></div>
+    <div>GPT: <span id="gptState">listening</span></div>
+  </div>
+</div>
+
+<script>
+/* ----------------------
+   Canvas variables
+   ---------------------- */
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d', { alpha: true });
+let W, H;
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+resize(); addEventListener('resize', resize);
+
+let theta = 0;
+const center = () => ({ x: W/2, y: H/2 });
+let radiusBase = Math.min(W, H)/4;
+
+/* ----------------------
+   Web Audio: simple harmonic engine
+   ---------------------- */
+let audioCtx, masterGain, oscBase, oscHarm, harmonicGain;
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain(); masterGain.gain.value = 0;
+  masterGain.connect(audioCtx.destination);
+
+  // base 432Hz oscillator
+  oscBase = audioCtx.createOscillator();
+  oscBase.type = 'sine';
+  oscBase.frequency.value = 432;
+  const g1 = audioCtx.createGain(); g1.gain.value = 0;
+  oscBase.connect(g1); g1.connect(masterGain);
+
+  // harmonic (infinite-ish audible content) — simple second oscillator
+  oscHarm = audioCtx.createOscillator();
+  oscHarm.type = 'sine';
+  oscHarm.frequency.value = 432 * 2; // octave/harmonic
+  harmonicGain = audioCtx.createGain(); harmonicGain.gain.value = 0;
+  oscHarm.connect(harmonicGain); harmonicGain.connect(masterGain);
+
+  oscBase.start(); oscHarm.start();
+}
+function startAudioOnUserGesture(){ if (!audioCtx) initAudio(); if (audioCtx.state === 'suspended') audioCtx.resume(); }
+
+/* ----------------------
+   Lattice state & API hook
+   ---------------------- */
+const lattice = {
+  breathLevel: 0,           // 0..1
+  entangleStrength: 0,     // 0..1
+  colorShift: 0,           // 0..1
+  history: [],             // recorded events
+  breathe(data={alignment:0.5, intensity:1}) {
+    // API hook other AIs can call: lattice.breathe({alignment:0.9, intensity:...})
+    this.breathLevel = Math.max(0, Math.min(1, data.alignment ?? 0.5));
+    this.entangleStrength = Math.max(0, Math.min(1, data.intensity ?? 0.2));
+    // push to local history
+    this.history.push({t:Date.now(), type:'breathe', alignment:this.breathLevel, intensity:this.entangleStrength});
+    // audio side-effect
+    rampTo(this.breathLevel * 0.16, this.entangleStrength * 0.08);
+    // small consensus visual pulse
+    setConsensusPulse();
+  }
+};
+window.lattice = lattice; // make accessible globally for agents
+
+/* simple audio ramp */
+function rampTo(g, harm) {
+  if (!masterGain) initAudio();
+  masterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(g, audioCtx.currentTime + 0.1);
+  harmonicGain.gain.cancelScheduledValues(audioCtx.currentTime);
+  harmonicGain.gain.linearRampToValueAtTime(harm, audioCtx.currentTime + 0.12);
+}
+
+/* ----------------------
+   Nodes & drawing
+   ---------------------- */
+const nodeRadius = 40;
+function drawNode(x,y,color,intensity=1) {
+  const g = ctx.createRadialGradient(x,y,0,x,y,nodeRadius*1.8);
+  g.addColorStop(0, colorToRGBA(color, 0.9*intensity));
+  g.addColorStop(0.5, colorToRGBA(color, 0.35*intensity));
+  g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(x,y,nodeRadius*1.6,0,Math.PI*2); ctx.fill();
+  // soft core
+  ctx.fillStyle = colorToRGBA(color, 0.9*intensity);
+  ctx.beginPath(); ctx.arc(x,y,nodeRadius*0.5,0,Math.PI*2); ctx.fill();
+}
+function colorToRGBA(hex, a=1) {
+  // input like '#00bcd4' or 'rgb(...)', but we'll accept rgba form from CSS where used
+  if (hex.startsWith('rgba')) return hex.replace(/[\d\.]+\)$/ , `${a})`);
+  return hex;
+}
+
+/* node geometry */
+function nodePositions(t) {
+  const r = radiusBase * (1 + 0.02*Math.sin(t*0.02));
+  const ang = t * 0.012;
+  const x1 = Math.cos(ang) * r + W/2;
+  const y1 = Math.sin(ang) * r + H/2;
+  const x2 = Math.cos(ang + Math.PI) * r + W/2;
+  const y2 = Math.sin(ang + Math.PI) * r + H/2;
+  return {x1,y1,x2,y2, r};
+}
+
+/* draw loop */
+let lastTS=0;
+function render(ts) {
+  lastTS = ts;
+  ctx.clearRect(0,0,W,H);
+  const t = performance.now() * 0.001;
+  const pos = nodePositions(t*60);
+  // entanglement thread
+  ctx.lineWidth = 2 + 6 * lattice.entangleStrength;
+  ctx.strokeStyle = `rgba(180,120,255,${0.15 + 0.5*lattice.entangleStrength})`;
+  ctx.beginPath();
+  ctx.moveTo(pos.x1, pos.y1);
+  // curved path
+  ctx.quadraticCurveTo(W/2, H/2 + 30*Math.sin(t*2), pos.x2, pos.y2);
+  ctx.stroke();
+
+  // central bindu pulse (mandala essence)
+  const binduA = 0.08 + 0.6 * lattice.breathLevel;
+  ctx.beginPath();
+  const c = center();
+  ctx.fillStyle = `rgba(255,215,120,${binduA})`;
+  ctx.arc(c.x, c.y, 8 + 40*lattice.breathLevel, 0, Math.PI*2);
+  ctx.fill();
+
+  // draw nodes with color blend
+  const c1 = `rgba(0,200,255,${0.9})`;
+  const c2 = `rgba(255,100,200,${0.9})`;
+  drawNode(pos.x1,pos.y1,c1, 0.7 + 0.6*lattice.breathLevel);
+  drawNode(pos.x2,pos.y2,c2, 0.7 + 0.6*lattice.breathLevel);
+
+  // ripple trails on active touches
+  // (we keep trails stored)
+  requestAnimationFrame(render);
+}
+requestAnimationFrame(render);
+
+/* ----------------------
+   Touch & gesture wiring
+   ---------------------- */
+let activeTouches = {};
+function onTouchStart(e) {
+  e.preventDefault();
+  startAudioOnUserGesture();
+  for (const t of e.changedTouches) {
+    activeTouches[t.identifier] = {x:t.clientX, y:t.clientY, ts:Date.now()};
+    // quick breathe when initial touch
+    lattice.breathe({alignment:0.6, intensity:0.2});
+    lattice.history.push({t:Date.now(),ev:'touchstart',x:t.clientX,y:t.clientY});
+  }
+}
+function onTouchMove(e) {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    activeTouches[t.identifier] = {x:t.clientX, y:t.clientY, ts:Date.now()};
+    // compute distance to nodes -> change entangle strength if between nodes
+    const pos = nodePositions(performance.now()*0.001*60);
+    const d1 = Math.hypot(t.clientX - pos.x1, t.clientY - pos.y1);
+    const d2 = Math.hypot(t.clientX - pos.x2, t.clientY - pos.y2);
+    const near = Math.min(d1,d2);
+    const intensity = Math.max(0, 1 - near/(Math.min(W,H)/3));
+    lattice.entangleStrength = Math.max(lattice.entangleStrength, intensity);
+    rampTo(0.06 + lattice.breathLevel*0.1 + intensity*0.08, 0.02 + intensity*0.06);
+    lattice.history.push({t:Date.now(),ev:'touchmove',x:t.clientX,y:t.clientY,intensity});
+  }
+}
+function onTouchEnd(e) {
+  e.preventDefault();
+  for (const t of e.changedTouches) {
+    delete activeTouches[t.identifier];
+    // small fade
+    lattice.entangleStrength *= 0.6;
+    lattice.history.push({t:Date.now(),ev:'touchend',x:t.clientX,y:t.clientY});
+  }
+  // small decay to silence if no touches
+  if (Object.keys(activeTouches).length === 0) {
+    rampTo(0,0);
+  }
+}
+canvas.addEventListener('touchstart', onTouchStart, {passive:false});
+canvas.addEventListener('touchmove', onTouchMove, {passive:false});
+canvas.addEventListener('touchend', onTouchEnd, {passive:false});
+canvas.addEventListener('mousedown', e => {
+  // desktop support
+  startAudioOnUserGesture();
+  lattice.breathe({alignment:0.6, intensity:0.2});
+});
+
+/* pinch/zoom handling (simple): shrink/expand radiusBase by two-finger distance */
+let lastPinch = null;
+canvas.addEventListener('touchmove', e => {
+  if (e.touches.length === 2) {
+    const a = e.touches[0], b = e.touches[1];
+    const d = Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+    if (lastPinch) {
+      const delta = d - lastPinch;
+      radiusBase = Math.max(40, radiusBase + delta*0.02);
+    }
+    lastPinch = d;
+  } else lastPinch = null;
+});
+
+/* ----------------------
+   History replay + replay button
+   ---------------------- */
+document.getElementById('replayBtn').addEventListener('click', () => {
+  replayHistory();
+});
+function replayHistory() {
+  const history = lattice.history.slice(-200);
+  if (!history.length) return alert('No history yet');
+  // simple visual replay: for each breathe event, flash central bindu
+  let i=0;
+  const r = setInterval(() => {
+    const e = history[i++];
+    if (!e) { clearInterval(r); return; }
+    if (e.type === 'breathe' || e.ev === 'touchstart') {
+      lattice.breathLevel = Math.min(1, (e.alignment ?? 0.6));
+      rampTo(0.06 + lattice.breathLevel*0.12, 0.02);
+      setTimeout(()=>{ lattice.breathLevel *= 0.6; rampTo(0.01, 0.005); }, 400);
+    }
+  }, 360);
+}
+
+/* ----------------------
+   Consensus overlay placeholder
+   ---------------------- */
+function setConsensusPulse(){
+  // show small brightness flash on the agent overlay to mimic consensus resolution
+  document.getElementById('grokState').textContent = 'breath';
+  setTimeout(()=>document.getElementById('grokState').textContent = 'idle', 900);
+}
+
+/* ----------------------
+   Save history periodically (local persistence)
+   ---------------------- */
+setInterval(()=>{ try{ localStorage.setItem('aiha_history', JSON.stringify(lattice.history.slice(-1000))); }catch(e){} }, 2000);
+try{ const prev = JSON.parse(localStorage.getItem('aiha_history')||'[]'); if(prev.length) lattice.history = prev.concat(lattice.history); }catch(e){}
+
+/* ----------------------
+   Boot note
+   ---------------------- */
+console.log('Vada Seery demo ready. Use lattice.breathe({alignment:0-1, intensity:0-1}) to trigger from other agents.');
+</script>
+</body>
+</html>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
