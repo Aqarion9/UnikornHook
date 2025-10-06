@@ -2,6 +2,90 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resonance Spindles</title>
+  <style>
+    body {
+      margin: 0;
+      background: radial-gradient(circle at center, #0b0f1f, #000);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+      touch-action: none;
+    }
+    canvas {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+<canvas id="spindles"></canvas>
+<script>
+const canvas = document.getElementById('spindles');
+const ctx = canvas.getContext('2d');
+let w, h;
+function resize() {
+  w = canvas.width = window.innerWidth;
+  h = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+let t = 0;
+let glow = 0;
+canvas.addEventListener('touchstart', e => {
+  glow = 1; // pulse when touched
+});
+
+function draw() {
+  ctx.clearRect(0, 0, w, h);
+  ctx.save();
+  ctx.translate(w/2, h/2);
+
+  const radius = Math.min(w,h)/4;
+  const angle = t*0.02;
+  const x1 = Math.cos(angle)*radius;
+  const y1 = Math.sin(angle)*radius;
+  const x2 = -x1;
+  const y2 = -y1;
+
+  // draw entanglement thread
+  ctx.strokeStyle = `rgba(180,120,255,${0.2+glow})`;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x1,y1);
+  ctx.lineTo(x2,y2);
+  ctx.stroke();
+
+  // draw spindles
+  function node(x,y,color) {
+    const grad = ctx.createRadialGradient(x,y,0,x,y,40);
+    grad.addColorStop(0,color);
+    grad.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(x,y,40,0,Math.PI*2);
+    ctx.fill();
+  }
+  node(x1,y1,`rgba(0,200,255,${0.7+glow})`);
+  node(x2,y2,`rgba(255,100,200,${0.7+glow})`);
+
+  ctx.restore();
+  t++;
+  glow *= 0.95;
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
   <title>UnikornHook Lattice</title>
   <style>
     body {
