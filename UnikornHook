@@ -1,6 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <title>UnikornHook Lattice</title>
+  <style>
+    body {
+      background: radial-gradient(ellipse at center, #0b0b2a, #000000);
+      color: #e0e0ff;
+      font-family: monospace;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+    #lattice {
+      padding: 2rem;
+      border: 1px solid #444;
+      border-radius: 1rem;
+      background: rgba(255,255,255,0.05);
+    }
+  </style>
+</head>
+<body>
+  <div id="lattice">Loading UnikornHook Codex…</div>
+  <script>
+    fetch('data/unikornhook_frontend_snippets.json')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('lattice').innerHTML =
+          `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+      })
+      .catch(err => {
+        document.getElementById('lattice').textContent = 'Error loading codex: ' + err;
+      });
+  </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI@HA | Unified Source Resonance</title>
