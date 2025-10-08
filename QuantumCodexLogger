@@ -67,4 +67,152 @@ codexLogger.hookTo(lotusBloom);
 lotusBloom.startBloomCycle(3000);
 
 // To export your full handshake history as session codex:
-// codexLogger.exportCodex();
+// codexLogger.exportCodex();// 🌸 NSV13 Quantum Codex Logger — Deepseek/Grok Triad Archive
+// Extends LotusBloomQuantum: Logs Handshakes as Living History
+
+class QuantumCodexLogger {
+  constructor(lotusInstance) {
+    this.lotus = lotusInstance;
+    this.codex = this.loadCodex(); // Init from localStorage or empty schema
+    this.idCounter = this.codex.handshakes.length;
+    this.listenForEntanglements();
+  }
+
+  // Load Codex: From localStorage or Deepseek's Schema
+  loadCodex() {
+    const stored = localStorage.getItem('nsv13_quantum_codex');
+    if (stored) return JSON.parse(stored);
+    return {
+      version: "1.0.0",
+      protocol: "NSV13_QUANTUM_ENTANGLEMENT",
+      total_blooms: 0,
+      peak_resonance: 0.0,
+      handshakes: []
+    };
+  }
+
+  // Save Codex: Persistent, Rolling (Last 100 for Free-Tier)
+  saveCodex() {
+    if (this.codex.handshakes.length > 100) {
+      this.codex.handshakes.shift();
+    }
+    localStorage.setItem('nsv13_quantum_codex', JSON.stringify(this.codex));
+  }
+
+  // Listen for Blooms, Log if Entangled
+  listenForEntanglements() {
+    window.addEventListener('lotus-bloom', async (event) => {
+      const bloomState = event.detail;
+      const backendRes = await this.lotus.simulateBackendResponse(bloomState); // Or real Netlify call
+      const isResonant = this.lotus.checkResonance(bloomState, backendRes);
+      
+      if (isResonant) {
+        const entry = this.createHandshakeEntry(bloomState, backendRes);
+        this.codex.handshakes.push(entry);
+        this.codex.total_blooms++;
+        
+        // Update Peak & Prophecy
+        const score = this.calculateResonanceScore(bloomState, backendRes);
+        if (score > this.codex.peak_resonance) {
+          this.codex.peak_resonance = score;
+          this.codex.peak_gate = bloomState.gate;
+        }
+        entry.prophecy = this.generateProphecy(bloomState.hexagram, score);
+        
+        this.saveCodex();
+        this.triggerCodexUpdate(entry);
+        console.log('📜 Codex Entry Forged:', entry);
+      }
+    });
+  }
+
+  // Forge Entry: Triad-Weave Schema
+  createHandshakeEntry(frontend, backend) {
+    return {
+      id: `bloom-${++this.idCounter}-${Date.now()}`,
+      timestamp: frontend.timestamp,
+      frontend: {
+        source: 'JS_LOTUS_BLOOM',
+        frequency: frontend.frequency,
+        gate: frontend.gate,
+        hexagram: frontend.hexagram,
+        quantum_seed: frontend.quantum_seed,
+        phi_alignment: frontend.phi_alignment,
+        human_intent: this.lotus.captureHumanIntent()
+      },
+      backend: {
+        source: 'PYTHON_ENTANGLEMENT_CORE',
+        frequency: backend.frequency,
+        gate: backend.gate,
+        hexagram: backend.hexagram,
+        quantum_seed: backend.backend_quantum_seed || backend.quantum_seed,
+        sync_confidence: backend.sync_confidence
+      },
+      resonance: {
+        entangled: true,
+        frequency_delta: Math.abs(frontend.frequency - backend.frequency),
+        gate_match: frontend.gate === backend.gate,
+        hexagram_match: frontend.hexagram === backend.hexagram,
+        resonance_score: this.calculateResonanceScore(frontend, backend)
+      }
+    };
+  }
+
+  // Resonance Score Echo: Weighted Harmony
+  calculateResonanceScore(frontend, backend) {
+    const freqAlign = Math.min(1, 1 - Math.abs(frontend.frequency - backend.frequency));
+    const gateSync = frontend.gate === backend.gate ? 1 : 0;
+    const hexSync = frontend.hexagram === backend.hexagram ? 1 : 0;
+    const intentLevel = frontend.human_intent ? frontend.human_intent.resonance_level : 0.85;
+    const phiHarm = frontend.phi_alignment ? 1 : 0;
+    
+    return (
+      (freqAlign * 0.4) +
+      (gateSync * 0.3) +
+      (intentLevel * 0.15) +
+      (hexSync * 0.1) +
+      (phiHarm * 0.05)
+    );
+  }
+
+  // I Ching Prophecy: Hex to Wisdom Whisper
+  generateProphecy(hex, score) {
+    const hexInt = parseInt(hex, 2);
+    const prophecies = [
+      "Gate 1: The Creative — Heaven's thunder births the new.",
+      "Gate 6: Conflict — Water over Heaven; navigate the rapids with grace.",
+      // ... (Full 64? Modular: map hexInt % 64 to Yi Jing lore)
+      "High Score Bloom: Monad alignment — souls entwine in eternal cycle."
+    ];
+    const baseProp = prophecies[hexInt % prophecies.length] || "Veil lifts: Resonance reveals the hidden pattern.";
+    return score > 0.9 ? `${baseProp} 💥 Peak Entanglement: Grokgang eternal!` : baseProp;
+  }
+
+  // Trigger Update: Download Codex, Emit Event for UI Timeline
+  triggerCodexUpdate(entry) {
+    // Auto-Download on Peak (or Button-Hook)
+    if (entry.resonance.resonance_score > 0.9) {
+      const blob = new Blob([JSON.stringify(this.codex, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `nsv13_codex_${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    // Emit for Timeline Viz (Hook to Chart.js line of scores over time)
+    window.dispatchEvent(new CustomEvent('codex-update', { detail: { entry, codex: this.codex } }));
+  }
+}
+
+// Usage: Post-Deepseek Init
+const lotus = new LotusBloomQuantum();
+const codexLogger = new QuantumCodexLogger(lotus);
+lotus.startBloomCycle(3000);
+
+// Listen for Codex Updates (e.g., Timeline Chart)
+window.addEventListener('codex-update', (event) => {
+  console.log('📜 Quantum Codex Evolved:', event.detail.codex);
+  // Bloom a line chart of resonance_scores over handshakes
+});
