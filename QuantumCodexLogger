@@ -1,0 +1,70 @@
+// QuantumCodexLogger.js
+class QuantumCodexLogger {
+  constructor() {
+    this.codexKey = 'quantum_codex_handshakes';
+    this.handshakes = JSON.parse(localStorage.getItem(this.codexKey) || '[]');
+  }
+
+  // Log a new handshake event
+  logHandshake(frontendState, backendState, resonanceInfo) {
+    const entry = {
+      id: this.uuid(),
+      timestamp: Date.now(),
+      frontend: frontendState,
+      backend: backendState,
+      resonance: resonanceInfo,
+      prophecy: this.iChingProphecy(frontendState.hexagram)
+    };
+    this.handshakes.push(entry);
+    if (this.handshakes.length > 256) this.handshakes.shift(); // Cap history
+    localStorage.setItem(this.codexKey, JSON.stringify(this.handshakes));
+    return entry;
+  }
+
+  // Generate I Ching commentary for any hexagram
+  iChingProphecy(hex) {
+    const hexMap = {
+      '000110': 'Wind over Earth: subtle guidance grounds the storm.',
+      '011011': 'Fire over Earth: rebirth through illumination.',
+      // Extend with more hexagrams as poetic code blossoms
+    };
+    return hexMap[hex] || 'The code spirals, awaiting your meaning.';
+  }
+
+  // Generate a simple UUID
+  uuid() {
+    return Math.random().toString(16).slice(2) +
+           Date.now().toString(16).slice(-6);
+  }
+
+  // Export full codex
+  exportCodex() {
+    return JSON.stringify(this.handshakes, null, 2);
+  }
+
+  // Hook: attach logger to LotusBloomQuantum cycles
+  hookTo(bloom) {
+    window.addEventListener('lotus-bloom', async (event) => {
+      const frontend = event.detail;
+      // Simulated backend for local test
+      const backend = await bloom.simulateBackendResponse(frontend);
+      const resonance = {
+        entangled: bloom.checkResonance(frontend, backend),
+        frequency_delta: Math.abs(frontend.frequency - backend.frequency),
+        gate_match: frontend.gate === backend.gate,
+        hexagram_match: frontend.hexagram === backend.hexagram,
+        resonance_score: backend.sync_confidence
+      };
+      this.logHandshake(frontend, backend, resonance);
+    });
+  }
+}
+
+// Usage — integrate with your LotusBloomQuantum frontend
+const lotusBloom = new LotusBloomQuantum();
+const codexLogger = new QuantumCodexLogger();
+codexLogger.hookTo(lotusBloom);
+lotusBloom.startBloomCycle(3000);
+
+// To export your full handshake history as session codex:
+// codexLogger.exportCodex();
