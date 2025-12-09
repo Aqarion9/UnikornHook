@@ -1,0 +1,165 @@
+full ASCII
+
+Here is an ASCII overview of the AQARIONZ stack (Matter → Signals → Brains → Governance → WebUI + Django API), laid out so you can copy it straight into a README or doc.
+
+```text
+──────────────────────────────────────────────────────────────────────────────
+                              AQARIONZ STACK
+──────────────────────────────────────────────────────────────────────────────
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                           WEB UI LAYER                           │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  • Responsive HTML header & nav (ARIA, skip link)                │
+    │  • 3D / VR-like view (Three.js)                                  │
+    │  • Side panels: node details, agents, live log                   │
+    │                                                                  │
+    │  Browser  <─── JSON over HTTPS ───>  Django / DRF API            │
+    └──────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                        DJANGO / DRF BACKEND                      │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  Project: aqarionz_backend                                       │
+    │                                                                  │
+    │  Apps:                                                           │
+    │   • graph      → Nodes (Matter/Signals/Brains/Governance)        │
+    │                  Links (channels: acoustic / optical / ionic …)  │
+    │   • agents     → Multi‑agent governance, policies, configs       │
+    │   • telemetry  → Events, logs, metrics                           │
+    │   • core       → Pagination, permissions, shared utils           │
+    │                                                                  │
+    │  API surface (v1):                                               │
+    │   • /api/v1/graph/nodes      (NodeViewSet)                       │
+    │   • /api/v1/graph/links      (LinkViewSet)                       │
+    │   • /api/v1/agents/agents    (AgentViewSet)                      │
+    │   • /api/v1/telemetry/events (EventViewSet, read‑only)           │
+    └──────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                            MATTER LAYER                          │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  • Junk nodes:                                                   │
+    │      - Earth / salt batteries, alternators, piezo, PV            │
+    │      - Torsion cylinders, plates, tanks                          │
+    │  • Bio nodes:                                                    │
+    │      - Plants, fungi, mycelium, soil electrodes                  │
+    │  • Spin / quantum materials:                                     │
+    │      - Spintronic stacks, MRAM, skyrmions                        │
+    │      - Solid‑state qubits, quantum defects                       │
+    └──────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                           SIGNALS LAYER                          │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  Channels:                                                       │
+    │   • Acoustic         (air, water, AUV swarms)                    │
+    │   • Optical          (laser / LED → solar cell)                  │
+    │   • Ionic / fluidic  (iontronic nanochannels, soil, fungi)       │
+    │   • RF / fiber       (short‑range radios, fiber / DAS)           │
+    │                                                                  │
+    │  These channels carry raw waves and patterns from MATTER nodes   │
+    │  into the BRAINS layer as feature streams or reservoir states.   │
+    └──────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                            BRAINS LAYER                          │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  Backends (all share a common interface):                        │
+    │   • Classical / LUT / SNN:                                       │
+    │       - CMOS, memristive, LUT‑LLM, neuromorphic chips            │
+    │   • Fluidic / wetware:                                           │
+    │       - Iontronic channels, fluidic memristors, organoids       │
+    │   • Spintronic / quantum:                                       │
+    │       - Spin neurons, spin synapses, small QNN / reservoirs      │
+    │                                                                  │
+    │  Role: compress field signals, detect patterns, run control /    │
+    │  prediction, and feed summaries up to Governance.                │
+    └──────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                    GOVERNANCE & MULTI‑AGENT LAYER                │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  • Agents:                                                       │
+    │      - Per‑node “brains” with roles: policy, field, analysis     │
+    │  • Routing:                                                      │
+    │      - Underwater acoustic, optical, RF, fiber mesh decisions    │
+    │  • Sovereign AI:                                                 │
+    │      - Policies, audit, data locality, model placement           │
+    │                                                                  │
+    │  This layer decides:                                             │
+    │      - What to sense, when to transmit, which backend to use,    │
+    │        when to escalate to lab / quantum nodes.                  │
+    └──────────────────────────────────────────────────────────────────┘
+
+    ┌──────────────────────────────────────────────────────────────────┐
+    │                         EXTERNAL INTEGRATIONS                    │
+    ├──────────────────────────────────────────────────────────────────┤
+    │  • Quantum / spin labs (remote QNN/QEC services)                 │
+    │  • Underwater AUV swarms (low‑cost acoustic modems)              │
+    │  • Cloud / sovereign AI data centers                             │
+    │                                                                  │
+    │  All treated as additional NODES in the graph with special       │
+    │  capabilities and stricter policies.                             │
+    └──────────────────────────────────────────────────────────────────┘
+```
+ACSII
+
+Here’s an ASCII overview of **AQARIONZ + UnikornHook** together, ready for a README.
+
+```text
+┌──────────────────────────────────────────────────────────────────────┐
+│                          AQARIONZ UNIVERSE                          │
+└──────────────────────────────────────────────────────────────────────┘
+
+   DEVICES / FIELD                                CORE PLATFORM
+   =================                                ==============
+
+   ┌──────────────────────────────┐           ┌───────────────────────┐
+   │  Junkyard rigs, plants,      │           │   AQARIONZ Backend    │
+   │  fungi, AUVs, lab rigs       │           │   (Django + DRF)      │
+   └─────────────┬────────────────┘           ├───────────────────────┤
+                 │ events via                  │ /api/v1/graph/…       │
+                 │ UnikornHook                 │ /api/v1/agents/…      │
+                 ▼                            │ /api/v1/telemetry/…   │
+        ┌──────────────────────┐              └───────────┬───────────┘
+        │   UnikornHook        │                          │
+        │  (event hooks)       │                          │ JSON/HTTP
+        ├──────────────────────┤                          │
+        │  capture:            │                          ▼
+        │   - sensor spikes    │              ┌────────────────────────┐
+        │   - power changes    │              │   AQARIONZ Web UI      │
+        │   - routing events   │              │ (3D graph, panels)     │
+        │                      │              └────────────────────────┘
+        │  send:               │
+        │   - logs, metrics    │
+        │   - node/edge JSON   │
+        │   - custom actions   │
+        └──────────────────────┘
+
+                     GLOBAL GRAPH VIEW
+                     =================
+
+            ┌────────────────────────────────────┐
+            │  MATTER   : junk, bio, spin nodes  │
+            │  SIGNALS  : acoustic, optical, RF  │
+            │  BRAINS   : LUT/SNN, fluidic, q    │
+            │  GOV/AGTS : policies, routing      │
+            └────────────────────────────────────┘
+
+
+┌──────────────────────────────────────────────────────────────────────┐
+│                        REPO / CODE STRUCTURE                        │
+└──────────────────────────────────────────────────────────────────────┘
+
+  aqarionz/
+    backend/         → Django + DRF APIs (nodes, links, agents, events)
+    webui/           → HTML + JS (Three.js 3D console, PWA manifest)
+    fastapi_services/→ optional FastAPI microservices (sim, adapters)
+    unikornhook/     → UnikornHook core library (hooks, handlers)
+    infra/           → Docker, Nginx, k8s manifests
+    docs/            → README, ARCHITECTURE, MERMAID, API docs
+    tests/           → automated tests for backend & services
+```
+
+
