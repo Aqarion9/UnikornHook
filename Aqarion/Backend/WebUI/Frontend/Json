@@ -1,0 +1,75 @@
+json
+
+Here is a compact JSON example for a small AQARIONZ graph that you can POST to your API or use in tests.
+
+```json
+{
+  "nodes": [
+    {
+      "id": "junk1",
+      "name": "Junkyard Node",
+      "layer": "matter",
+      "x": -2.0,
+      "y": 0.0,
+      "z": 0.0,
+      "status": "ok",
+      "power": 0.3,
+      "backend": null
+    },
+    {
+      "id": "plant1",
+      "name": "Plant/Fungi Node",
+      "layer": "signals",
+      "x": 0.0,
+      "y": 0.0,
+      "z": 0.0,
+      "status": "ok",
+      "power": 0.4,
+      "backend": null
+    },
+    {
+      "id": "lab1",
+      "name": "Lab Neuromorphic",
+      "layer": "brains",
+      "x": 2.0,
+      "y": 0.0,
+      "z": 0.0,
+      "status": "ok",
+      "power": 0.9,
+      "backend": "memristive-snn"
+    },
+    {
+      "id": "gov1",
+      "name": "Sovereign Coordinator",
+      "layer": "governance",
+      "x": 0.0,
+      "y": 2.0,
+      "z": 0.0,
+      "status": "ok",
+      "power": 1.0,
+      "backend": "multi-agent"
+    }
+  ],
+  "links": [
+    {
+      "source": "junk1",
+      "target": "plant1",
+      "channel": "optical",
+      "weight": 1.0
+    },
+    {
+      "source": "plant1",
+      "target": "lab1",
+      "channel": "acoustic",
+      "weight": 0.8
+    },
+    {
+      "source": "lab1",
+      "target": "gov1",
+      "channel": "policy",
+      "weight": 1.0
+    }
+  ]
+}
+```
+
