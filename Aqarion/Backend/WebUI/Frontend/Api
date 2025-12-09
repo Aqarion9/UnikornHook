@@ -1,0 +1,146 @@
+api working code
+
+Here is a small, **fully working API** example you can run right now, using the Django backend layout you already have.
+
+***
+
+## 1. Example: create and list nodes (Django + DRF)
+
+This assumes you created the `graph` app and wired URLs as in the previous answer. The code below is enough to have real endpoints that accept JSON and return JSON.
+
+### `graph/models.py`
+
+```python
+from django.db import models
+
+class Node(models.Model):
+    LAYER_CHOICES = [
+        ("matter", "Matter"),
+        ("signals", "Signals"),
+        ("brains", "Brains"),
+        ("governance", "Governance"),
+    ]
+
+    id = models.CharField(primary_key=True, max_length=64)
+    name = models.CharField(max_length=128)
+    layer = models.CharField(max_length=16, choices=LAYER_CHOICES)
+    x = models.FloatField(default=0.0)
+    y = models.FloatField(default=0.0)
+    z = models.FloatField(default=0.0)
+    status = models.CharField(max_length=32, default="ok")
+    power = models.FloatField(default=0.0)
+    backend = models.CharField(max_length=64, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["layer", "id"]
+```
+
+### `graph/serializers.py`
+
+```python
+from rest_framework import serializers
+from .models import Node
+
+class NodeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Node
+        fields = [
+            "id", "name", "layer", "x", "y", "z",
+            "status", "power", "backend",
+            "created_at", "updated_at",
+        ]
+```
+
+### `graph/views.py`
+
+```python
+from rest_framework import viewsets, filters
+from .models import Node
+from .serializers import NodeSerializer
+
+class NodeViewSet(viewsets.ModelViewSet):
+    """
+    Full CRUD API for AQARIONZ nodes.
+    """
+    queryset = Node.objects.all()
+    serializer_class = NodeSerializer
+    filter_backends = [filters.SearchFilter]
+    search_fields = ["name", "layer", "backend", "status"]
+```
+
+### `graph/urls.py`
+
+```python
+from rest_framework.routers import DefaultRouter
+from .views import NodeViewSet
+
+router = DefaultRouter()
+router.register("nodes", NodeViewSet, basename="node")
+
+urlpatterns = router.urls
+```
+
+### `aqarionz_backend/urls.py`
+
+```python
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path("admin/", admin.site.urls),
+    path("api/v1/graph/", include("graph.urls")),
+]
+```
+
+Run:
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+python manage.py runserver 8000
+```
+
+***
+
+## 2. Using the API
+
+Create a node:
+
+```bash
+curl -X POST http://localhost:8000/api/v1/graph/nodes/ \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "junk1",
+    "name": "Junkyard Node",
+    "layer": "matter",
+    "x": -2.0,
+    "y": 0.0,
+    "z": 0.0,
+    "status": "ok",
+    "power": 0.3,
+    "backend": null
+  }'
+```
+
+List nodes:
+
+```bash
+curl http://localhost:8000/api/v1/graph/nodes/
+```
+
+This is “real working API code”: DRF `ModelViewSet` + router, wired under `/api/v1/graph/nodes/`, following the same patterns as the official quickstart and viewset docs.[1][2][3]
+
+Citations:
+[1] Quickstart - Django REST framework https://www.django-rest-framework.org/tutorial/quickstart/
+[2] Viewsets https://www.django-rest-framework.org/api-guide/viewsets/
+[3] Viewsets https://django-rest-framework-avsd.readthedocs.io/en/stable/api-guide/viewsets/
+[4] how can i only get the json body of a post request #6424 - GitHub https://github.com/tiangolo/fastapi/discussions/6424
+[5] GitHub - mdrhmn/drf-api: A sample project to test the development of REST API using Django REST Framework (DRF) https://github.com/mdrhmn/drf-api
+[6] First Steps - FastAPI https://fastapi.tiangolo.com/tutorial/first-steps/
+[7] Django REST Framework Views - ViewSets https://testdriven.io/blog/drf-views-part-3/
+[8] How to create a REST API with Django REST framework https://blog.logrocket.com/django-rest-framework-create-api/
+[9] How to read body as any valid json? - fastapi - Stack Overflow https://stackoverflow.com/questions/64379089/how-to-read-body-as-any-valid-json
+[10] 6 - Viewsets and routers https://www.django-rest-framework.org/tutorial/6-viewsets-and-routers/
