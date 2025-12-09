@@ -1,0 +1,21 @@
+from dataclasses import dataclass
+from typing import Optional
+
+@dataclass
+class Node:
+    id: str
+    name: str
+    layer: str
+    x: float = 0.0
+    y: float = 0.0
+    z: float = 0.0
+    status: str = "ok"
+    power: float = 0.0
+    backend: Optional[str] = None
+
+@dataclass
+class Link:
+    source: str
+    target: str
+    channel: str
+    weight: float = 1.0
