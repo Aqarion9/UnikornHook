@@ -1,0 +1,1908 @@
+ full html
+
+Here is a single, **full HTML file** for the AQARIONZ console: responsive, accessible, and ready to plug into your JS (Three.js, APIs). It uses semantic layout, ARIA, and a responsive 3D canvas container.[1][2][3]
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AQARIONZ System Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="AQARIONZ multi-layer console for matter, signals, brains, and governance." />
+  <meta name="theme-color" content="#040509" />
+
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <style>
+    :root {
+      --bg: #040509;
+      --bg-soft: #0b0d17;
+      --accent: #4b8bff;
+      --accent-soft: rgba(75,139,255,0.18);
+      --border: rgba(255,255,255,0.18);
+      --text: #f5f5ff;
+      --muted: #a5a7c5;
+      --danger: #ff4b8b;
+      --success: #44d17a;
+      --focus: #ffcc57;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { font-size: 16px; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #181a2a 0, #040509 40%, #000 100%);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: 0;
+      padding: 0.5rem 0.75rem;
+      background: #000;
+      color: #fff;
+      z-index: 1000;
+    }
+    .skip-link:focus {
+      left: 0.5rem;
+      top: 0.5rem;
+      outline: 2px solid var(--focus);
+    }
+
+    header[role="banner"] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(90deg, rgba(5,7,20,0.95), rgba(5,7,20,0.8));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(75,139,255,0.55);
+      background: radial-gradient(circle at left, rgba(75,139,255,0.35), transparent 60%);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .brand__dot {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 999px;
+      background: conic-gradient(from 150deg, #ff4b8b, #ffc857, #4b8bff, #44d17a, #ff4b8b);
+      box-shadow: 0 0 8px rgba(255,255,255,0.8);
+    }
+
+    nav[aria-label="Primary"] {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+    }
+
+    .tablist {
+      display: inline-flex;
+      gap: 0.25rem;
+      padding: 0.1rem;
+      border-radius: 999px;
+      background: rgba(6,8,18,0.9);
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(75,139,255,0.7);
+    }
+
+    .tab:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(7,9,18,0.9);
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .btn--primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    main[role="main"] {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      min-height: 0;
+    }
+
+    .scene-panel {
+      position: relative;
+      min-height: 260px;
+    }
+
+    .scene-panel__canvas {
+      position: absolute;
+      inset: 0;
+    }
+
+    .scene-panel__hint {
+      position: absolute;
+      left: 0.5rem;
+      bottom: 0.5rem;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(0,0,0,0.5);
+      border-radius: 0.25rem;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    aside[aria-label="Node details and log"] {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-left: 1px solid var(--border);
+      background: radial-gradient(circle at top, rgba(75,139,255,0.12), rgba(4,5,9,0.98));
+      min-height: 0;
+    }
+
+    .panel {
+      border-radius: 0.5rem;
+      background: rgba(5,7,20,0.95);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.6rem;
+      font-size: 0.78rem;
+      min-height: 0;
+    }
+
+    .panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+
+    .panel__title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .node-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+    }
+
+    .node-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.3rem;
+      margin-top: 0.4rem;
+    }
+
+    .metric {
+      border-radius: 0.35rem;
+      padding: 0.25rem 0.35rem;
+      background: rgba(12,14,24,0.98);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .metric-value {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    .agent-list,
+    .log {
+      max-height: 30vh;
+      overflow-y: auto;
+    }
+
+    .agent-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .agent-tag {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 0.05rem 0.4rem;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .log-line {
+      padding: 0.18rem 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .log-line__time {
+      font-weight: 600;
+      color: var(--text);
+      margin-right: 0.25rem;
+    }
+
+    footer {
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 0.3rem 0.75rem;
+      border-top: 1px solid var(--border);
+      background: rgba(4,5,9,0.96);
+    }
+
+    footer a { color: var(--accent); }
+
+    @media (max-width: 800px) {
+      main[role="main"] {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1.3fr) minmax(0, 1fr);
+      }
+      aside[aria-label="Node details and log"] {
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
+      nav[aria-label="Primary"] {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<header role="banner">
+  <div class="brand">
+    <span class="brand__dot" aria-hidden="true"></span>
+    <span class="brand__title">AQARIONZ System Console</span>
+  </div>
+
+  <nav aria-label="Primary">
+    <div class="tablist" role="tablist" aria-label="Layers">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="panel-all" id="tab-all" data-layer="all">
+        All
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-matter" id="tab-matter" data-layer="matter">
+        Matter
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-signals" id="tab-signals" data-layer="signals">
+        Signals
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-brains" id="tab-brains" data-layer="brains">
+        Brains
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-governance" id="tab-governance" data-layer="governance">
+        Governance
+      </button>
+    </div>
+  </nav>
+
+  <div class="top-controls">
+    <button type="button" class="btn" id="btn-xr" aria-pressed="false">
+      XR mode
+    </button>
+    <button type="button" class="btn btn--primary" id="btn-refresh">
+      Refresh
+    </button>
+  </div>
+</header>
+
+<main id="main-content" role="main">
+  <section class="scene-panel" aria-label="AQARIONZ 3D network view">
+    <div class="scene-panel__canvas" id="scene-canvas" role="img" aria-label="3D view of AQARIONZ nodes and links">
+      <!-- Three.js canvas inserted by JS -->
+    </div>
+    <p class="scene-panel__hint">
+      Use mouse or touch to navigate the 3D view. Keyboard users can focus panels for details.
+    </p>
+  </section>
+
+  <aside aria-label="Node details and log">
+    <section class="panel" aria-labelledby="node-details-heading">
+      <div class="panel__header">
+        <h2 id="node-details-heading" class="panel__title">Node details</h2>
+      </div>
+      <div aria-live="polite">
+        <p class="node-title" id="node-name">No node selected</p>
+        <p class="node-meta" id="node-meta">
+          Select a node in the 3D view to inspect it.
+        </p>
+      </div>
+      <div class="metrics-grid" aria-label="Node metrics">
+        <div class="metric">
+          <span class="metric-label">Status</span>
+          <span class="metric-value" id="metric-status">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Layer</span>
+          <span class="metric-value" id="metric-layer">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Power</span>
+          <span class="metric-value" id="metric-power">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Backend</span>
+          <span class="metric-value" id="metric-backend">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Position</span>
+          <span class="metric-value" id="metric-pos">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">ID</span>
+          <span class="metric-value" id="metric-id">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="agents-heading">
+      <div class="panel__header">
+        <h2 id="agents-heading" class="panel__title">Agents</h2>
+      </div>
+      <div class="agent-list" id="agent-list" aria-live="polite">
+        <!-- populated by JS -->
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="log-heading">
+      <div class="panel__header">
+        <h2 id="log-heading" class="panel__title">Live log</h2>
+      </div>
+      <div class="log" id="log" aria-live="polite">
+        <!-- log lines appended by JS -->
+      </div>
+    </section>
+  </aside>
+</main>
+
+<footer role="contentinfo">
+  <p>
+    AQARIONZ console • Semantic HTML, ARIA, and responsive layout for accessible dashboards.[web:480][web:482][web:485]
+  </p>
+</footer>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  // Minimal JS hooks; plug in your existing 3D + API code here.
+  const tabs = Array.from(document.querySelectorAll(".tab"));
+  let currentLayer = "all";
+
+  tabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      currentLayer = tab.dataset.layer;
+      tabs.forEach(t => t.setAttribute("aria-selected", t === tab ? "true" : "false"));
+      addLog(`Layer filter: ${currentLayer}`);
+      // TODO: notify 3D scene to filter nodes
+    });
+  });
+
+  const logEl = document.getElementById("log");
+  function addLog(msg) {
+    const row = document.createElement("div");
+    row.className = "log-line";
+    const timeSpan = document.createElement("span");
+    timeSpan.className = "log-line__time";
+    timeSpan.textContent = new Date().toLocaleTimeString();
+    row.appendChild(timeSpan);
+    row.appendChild(document.createTextNode(" " + msg));
+    logEl.prepend(row);
+  }
+
+  const agentList = document.getElementById("agent-list");
+  function setAgents(agents) {
+    agentList.innerHTML = "";
+    agents.forEach(a => {
+      const row = document.createElement("div");
+      row.className = "agent-row";
+      const nameSpan = document.createElement("span");
+      nameSpan.textContent = a.name;
+      const roleSpan = document.createElement("span");
+      roleSpan.className = "agent-tag";
+      roleSpan.textContent = a.role;
+      row.appendChild(nameSpan);
+      row.appendChild(roleSpan);
+      agentList.appendChild(row);
+    });
+  }
+
+  setAgents([
+    { name: "gov_root", role: "policy • governance" },
+    { name: "field_watch", role: "signals • anomaly detection" }
+  ]);
+
+  addLog("AQARIONZ console loaded. Connect your 3D scene and API client.");
+</script>
+</body>
+</html>
+```
+
+This “full HTML” file gives you a production‑style shell: semantic structure, ARIA, responsive layout, a dedicated 3D canvas area, and JS hooks ready to tie into your existing Three.js scene and REST APIs.[4][5][6]
+
+Citations:
+[1] HTML5 Semantic Elements: Enhancing Webpage Structure and ... https://www.djamware.com/post/68ad370d815caf67f748eff6/html5-semantic-elements-enhancing-webpage-structure-and-accessibility
+[2] Semantic HTML in 2025: The Bedrock of Accessible, SEO-Ready ... https://dev.to/gerryleonugroho/semantic-html-in-2025-the-bedrock-of-accessible-seo-ready-and-future-proof-web-experiences-2k01
+[3] Foundation of Accessible Web Design is in Semantics - ArtVersion https://artversion.com/blog/semantic-html-the-backbone-of-accessible-and-intuitive-web-design/
+[4] How to make responsive canvas with a 3d model using three.js? https://stackoverflow.com/questions/47756462/how-to-make-responsive-canvas-with-a-3d-model-using-three-js
+[5] Three.js Responsive Design https://threejsfundamentals.org/threejs/lessons/threejs-responsive.html
+[6] Best Accessible (WCAG 2.2) Responsive HTML5 Templates https://labinator.com/wordpress-marketplace/accessible-html-templates/
+[7] 40+ Back-end Simple Admin Panel Templates for 2025 https://www.bootstrapdash.com/blog/free-simple-admin-panel-templates
+[8] three.js responsive starter template: - DEV Community https://dev.to/dharmi/threejs-responsive-starter-template-41db
+[9] The best HTML & CSS dashboard templates for admins and users https://blog.hubspot.com/website/best-html5-admin-dashboard-templates
+[10] 11+ Free Bootstrap Admin and Dashboard Templates - UIdeck https://uideck.com/blog/free-bootstrap-admin-dashboard-templates
+
+
+- Mobile‑friendly 3D/“VR‑like” frontend (HTML + JS + Three.js).  
+- JSON API + Python backend (FastAPI).  
+
+You can paste these into files and run.
+
+***
+
+## 1. Backend (Python / FastAPI)
+
+**File: `backend/main.py`**
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List, Literal
+
+app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+Layer = Literal["matter", "signals", "brains", "governance"]
+
+class Node(BaseModel):
+    id: str
+    name: str
+    layer: Layer
+    x: float
+    y: float
+    z: float
+    status: str
+    power: float
+    backend: str | None = None
+
+class Link(BaseModel):
+    source: str
+    target: str
+    channel: str  # "acoustic", "optical", "ionic", etc.
+
+# Demo in‑memory graph
+NODES = [
+    Node(id="junk1", name="Junkyard Node", layer="matter",
+         x=-2, y=0, z=0, status="ok", power=0.2, backend=None),
+    Node(id="plant1", name="Plant/Fungi Node", layer="signals",
+         x=0, y=0, z=0, status="ok", power=0.3, backend=None),
+    Node(id="lab1", name="Lab Neuromorphic", layer="brains",
+         x=2, y=0, z=0, status="ok", power=0.8, backend="memristive"),
+    Node(id="q1", name="Quantum/Spin Lab", layer="brains",
+         x=4, y=1, z=0, status="idle", power=0.9, backend="spin+quantum"),
+    Node(id="gov1", name="Sovereign Coordinator", layer="governance",
+         x=0, y=2, z=0, status="ok", power=1.0, backend="multi-agent"),
+]
+
+LINKS = [
+    Link(source="junk1", target="plant1", channel="optical"),
+    Link(source="plant1", target="lab1", channel="acoustic"),
+    Link(source="lab1", target="q1", channel="fiber"),
+    Link(source="gov1", target="lab1", channel="policy"),
+]
+
+@app.get("/api/nodes", response_model=List[Node])
+def get_nodes():
+    return NODES
+
+@app.get("/api/links", response_model=List[Link])
+def get_links():
+    return LINKS
+
+class NodeUpdate(BaseModel):
+    status: str | None = None
+    backend: str | None = None
+    power: float | None = None
+
+@app.post("/api/nodes/{node_id}")
+def update_node(node_id: str, update: NodeUpdate):
+    for n in NODES:
+        if n.id == node_id:
+            if update.status is not None:
+                n.status = update.status
+            if update.backend is not None:
+                n.backend = update.backend
+            if update.power is not None:
+                n.power = update.power
+            return {"ok": True}
+    return {"ok": False}
+```
+
+Run:
+
+```bash
+uvicorn backend.main:app --reload --port 8000
+```
+
+***
+
+## 2. Frontend (HTML + JS + Three.js, mobile‑friendly)
+
+**File: `frontend/index.html`**
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AQARIONZ 3D WebUI</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html, body { margin:0; padding:0; height:100%; overflow:hidden; background:#05060a; color:#eee; font-family:system-ui,sans-serif; }
+    #ui { position:absolute; top:0; left:0; right:0; height:60px; display:flex; align-items:center; padding:8px 10px; box-sizing:border-box; background:rgba(0,0,0,0.4); backdrop-filter:blur(6px); z-index:10; }
+    #layers { flex:1; display:flex; gap:4px; }
+    .pill { padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,0.2); font-size:12px; cursor:pointer; white-space:nowrap; }
+    .pill.active { background:#4b8bff; border-color:#4b8bff; }
+    #detail { flex:1; font-size:12px; text-align:right; padding-right:6px; }
+    #canvas-container { position:absolute; top:60px; bottom:0; left:0; right:0; }
+    #info { position:absolute; bottom:8px; left:8px; font-size:11px; color:#bbb; background:rgba(0,0,0,0.4); padding:4px 8px; border-radius:4px; }
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <div id="layers">
+      <div class="pill active" data-layer="all">All</div>
+      <div class="pill" data-layer="matter">Matter</div>
+      <div class="pill" data-layer="signals">Signals</div>
+      <div class="pill" data-layer="brains">Brains</div>
+      <div class="pill" data-layer="governance">Governance</div>
+    </div>
+    <div id="detail">Tap a node.</div>
+  </div>
+  <div id="canvas-container"></div>
+  <div id="info">Drag to rotate • Pinch/scroll to zoom • Tap nodes</div>
+
+  <script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    const API_BASE = "http://localhost:8000";
+
+    const container = document.getElementById("canvas-container");
+    const detailEl = document.getElementById("detail");
+    const layerPills = Array.from(document.querySelectorAll(".pill"));
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x05060a);
+
+    const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
+    camera.position.set(0, 4, 10);
+
+    const renderer = new THREE.WebGLRenderer({ antialias:true });
+    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+
+    const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambient);
+    const dir = new THREE.DirectionalLight(0xffffff, 0.8);
+    dir.position.set(5, 10, 7);
+    scene.add(dir);
+
+    const grid = new THREE.GridHelper(20, 20, 0x222244, 0x222244);
+    grid.position.y = -1;
+    scene.add(grid);
+
+    const nodeMeshes = new Map();
+    const linkMeshes = [];
+
+    const layerColors = {
+      matter: 0xff5555,
+      signals: 0xffc857,
+      brains: 0x4b8bff,
+      governance: 0x9b59b6,
+    };
+
+    let currentLayerFilter = "all";
+    let lastNodes = [];
+    let lastLinks = [];
+
+    function createNodeMesh(node) {
+      const color = layerColors[node.layer] || 0xffffff;
+      const geom = new THREE.SphereGeometry(0.25, 24, 24);
+      const mat = new THREE.MeshStandardMaterial({
+        color,
+        emissive: color,
+        emissiveIntensity: 0.3,
+        metalness: 0.4,
+        roughness: 0.4,
+      });
+      const mesh = new THREE.Mesh(geom, mat);
+      mesh.position.set(node.x, node.y, node.z);
+      mesh.userData.node = node;
+      scene.add(mesh);
+      return mesh;
+    }
+
+    function createLinkMesh(link, nodesById) {
+      const a = nodesById.get(link.source);
+      const b = nodesById.get(link.target);
+      if (!a || !b) return null;
+      const start = new THREE.Vector3(a.x, a.y, a.z);
+      const end = new THREE.Vector3(b.x, b.y, b.z);
+      const points = [start, end];
+      const geom = new THREE.BufferGeometry().setFromPoints(points);
+
+      let color = 0x888888;
+      if (link.channel === "optical") color = 0xffcc88;
+      else if (link.channel === "acoustic") color = 0x88ccff;
+      else if (link.channel === "fiber") color = 0x44ff88;
+      else if (link.channel === "policy") color = 0xffffff;
+
+      const mat = new THREE.LineBasicMaterial({ color, linewidth: 2 });
+      const line = new THREE.Line(geom, mat);
+      scene.add(line);
+      return line;
+    }
+
+    async function loadGraph() {
+      const [nodesRes, linksRes] = await Promise.all([
+        fetch(`${API_BASE}/api/nodes`),
+        fetch(`${API_BASE}/api/links`)
+      ]);
+      const nodes = await nodesRes.json();
+      const links = await linksRes.json();
+      lastNodes = nodes;
+      lastLinks = links;
+
+      nodeMeshes.forEach(m => scene.remove(m));
+      nodeMeshes.clear();
+      linkMeshes.forEach(l => scene.remove(l));
+      linkMeshes.length = 0;
+
+      const nodesById = new Map();
+      nodes.forEach(n => nodesById.set(n.id, n));
+
+      for (const n of nodes) {
+        const mesh = createNodeMesh(n);
+        nodeMeshes.set(n.id, mesh);
+      }
+
+      for (const l of links) {
+        const line = createLinkMesh(l, nodesById);
+        if (line) linkMeshes.push(line);
+      }
+
+      applyLayerFilter();
+    }
+
+    function applyLayerFilter() {
+      nodeMeshes.forEach((mesh, id) => {
+        const node = mesh.userData.node;
+        mesh.visible = (currentLayerFilter === "all" || node.layer === currentLayerFilter);
+      });
+      linkMeshes.forEach(line => {
+        const link = line.userData?.link;
+        line.visible = true;
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    });
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    function onTap(event) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      let x, y;
+      if (event.touches && event.touches.length > 0) {
+        x = event.touches[0].clientX;
+        y = event.touches[0].clientY;
+      } else {
+        x = event.clientX;
+        y = event.clientY;
+      }
+      pointer.x = ((x - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((y - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(pointer, camera);
+      const intersects = raycaster.intersectObjects(Array.from(nodeMeshes.values()));
+      if (intersects.length > 0) {
+        const node = intersects[0].object.userData.node;
+        detailEl.textContent = `${node.name} [${node.layer}] • status=${node.status}, power=${node.power.toFixed(2)} • backend=${node.backend ?? "none"}`;
+      }
+    }
+
+    renderer.domElement.addEventListener("click", onTap);
+    renderer.domElement.addEventListener("touchstart", onTap);
+
+    layerPills.forEach(p => {
+      p.addEventListener("click", () => {
+        layerPills.forEach(x => x.classList.remove("active"));
+        p.classList.add("active");
+        currentLayerFilter = p.dataset.layer;
+        applyLayerFilter();
+      });
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    loadGraph().catch(console.error);
+    animate();
+  </script>
+</body>
+</html>
+```
+
+Serve `frontend/` with any static server (or add FastAPI `StaticFiles` if you want them on the same port).
+
+This gives you:
+
+- Mobile‑friendly 3D scene (orbit, zoom, tap).  
+- Colored nodes per AQARIONZ layer.  
+- Lines for channels.  
+- JSON API backend ready to extend with real data.
+
+full robust profound html
+
+Here is a more robust, single‑file AQARIONZ HTML WebUI that is:
+
+- Mobile‑friendly  
+- 3D/VR‑ready (WebXR toggle stubbed)  
+- Structured around your four layers (Matter, Signals, Brains, Governance)  
+
+It talks to the same FastAPI backend (`/api/nodes`, `/api/links`) as in the previous answer.[1][2][3]
+
+***
+
+## Full robust HTML (save as `index.html`)
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AQARIONZ • 3D System Console</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <style>
+    :root {
+      --bg: #040509;
+      --bg-soft: #0b0d17;
+      --accent: #4b8bff;
+      --accent-soft: rgba(75,139,255,0.18);
+      --border: rgba(255,255,255,0.12);
+      --text: #f5f5ff;
+      --muted: #a5a7c5;
+      --danger: #ff4b8b;
+      --success: #44d17a;
+    }
+    * { box-sizing:border-box; }
+    html, body {
+      margin:0; padding:0; height:100%;
+      background: radial-gradient(circle at top, #191b2c 0, #040509 40%, #000 100%);
+      color:var(--text); font-family: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text",sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    body { overflow:hidden; }
+
+    #root {
+      display:flex; flex-direction:column;
+      height:100%; width:100%;
+    }
+
+    /* TOP BAR */
+
+    #topbar {
+      height:56px; display:flex; align-items:center;
+      padding:6px 10px; gap:8px;
+      background:linear-gradient(90deg, rgba(5,7,20,0.92), rgba(5,7,20,0.7));
+      border-bottom:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      z-index:20;
+    }
+
+    #brand {
+      display:flex; align-items:center; gap:6px;
+      padding:4px 8px; border-radius:999px;
+      background:radial-gradient(circle at left, rgba(75,139,255,0.25), transparent 55%);
+      border:1px solid rgba(75,139,255,0.45);
+      font-size:11px; letter-spacing:0.06em; text-transform:uppercase;
+      white-space:nowrap;
+    }
+    #brand-dot {
+      width:10px; height:10px; border-radius:50%;
+      background:conic-gradient(from 160deg, #ff4b8b, #ffc857, #4b8bff, #44d17a, #ff4b8b);
+      box-shadow:0 0 10px rgba(255,255,255,0.7);
+    }
+
+    #layer-tabs {
+      display:flex; gap:4px; flex:1; overflow-x:auto; padding:2px 0;
+    }
+    .tab {
+      flex:0 0 auto;
+      padding:5px 10px;
+      border-radius:999px; border:1px solid var(--border);
+      font-size:11px; cursor:pointer; color:var(--muted);
+      background:rgba(7,9,18,0.8);
+    }
+    .tab.active {
+      background:var(--accent);
+      color:#fff;
+      border-color:var(--accent);
+      box-shadow:0 0 14px rgba(75,139,255,0.7);
+    }
+
+    #right-controls {
+      display:flex; align-items:center; gap:6px;
+    }
+    .pill-btn {
+      padding:5px 9px; border-radius:999px;
+      border:1px solid var(--border);
+      font-size:11px; cursor:pointer;
+      background:rgba(7,9,18,0.9); color:var(--muted);
+    }
+    .pill-btn.primary {
+      background:var(--accent); color:#fff; border-color:var(--accent);
+    }
+
+    /* MAIN LAYOUT */
+
+    #main {
+      flex:1; display:flex; min-height:0;
+    }
+
+    #scene-wrap {
+      flex:2; min-width:0; position:relative;
+    }
+    #scene {
+      position:absolute; inset:0;
+    }
+
+    #hud {
+      position:absolute; bottom:8px; left:8px;
+      font-size:11px; color:var(--muted);
+      background:rgba(0,0,0,0.45);
+      padding:4px 8px; border-radius:4px;
+      border:1px solid rgba(255,255,255,0.08);
+    }
+
+    #side {
+      flex:1; min-width:220px; max-width:360px;
+      border-left:1px solid var(--border);
+      background:radial-gradient(circle at top, rgba(75,139,255,0.12), rgba(4,5,9,0.98));
+      display:flex; flex-direction:column;
+      padding:8px 8px 10px;
+      gap:8px;
+    }
+
+    #node-summary {
+      padding:6px 8px;
+      border-radius:8px;
+      background:rgba(5,7,20,0.9);
+      border:1px solid var(--border);
+      font-size:12px;
+    }
+    #node-summary .title {
+      font-size:13px; font-weight:600; margin-bottom:4px;
+    }
+    #node-summary .meta { color:var(--muted); font-size:11px; }
+
+    #metrics-grid {
+      display:grid; grid-template-columns:repeat(3, minmax(0,1fr));
+      gap:4px; margin-top:6px;
+    }
+    .metric {
+      padding:4px 6px; border-radius:6px;
+      background:rgba(12,14,24,0.95);
+      border:1px solid rgba(255,255,255,0.09);
+      font-size:10px; color:var(--muted);
+    }
+    .metric strong { display:block; color:var(--text); font-size:11px; }
+
+    #agent-list, #log {
+      flex:1; min-height:0;
+      border-radius:8px;
+      background:rgba(5,7,20,0.9);
+      border:1px solid var(--border);
+      padding:6px 8px;
+      font-size:11px;
+      overflow:auto;
+    }
+    #agent-list h3, #log h3 {
+      margin:0 0 4px; font-size:11px; text-transform:uppercase;
+      letter-spacing:0.08em; color:var(--muted);
+    }
+    .agent-row {
+      padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.06);
+      display:flex; justify-content:space-between; gap:4px;
+    }
+    .agent-row:last-child { border-bottom:none; }
+    .agent-tag {
+      font-size:10px; padding:2px 5px; border-radius:999px;
+      border:1px solid rgba(255,255,255,0.15);
+    }
+
+    .log-line {
+      padding:3px 0;
+      border-bottom:1px dashed rgba(255,255,255,0.08);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .log-line strong { color:var(--text); }
+
+    @media (max-width: 800px) {
+      #main { flex-direction:column; }
+      #side { max-width:none; height:42%; }
+      #scene-wrap { height:58%; }
+    }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div id="topbar">
+    <div id="brand">
+      <div id="brand-dot"></div>
+      <span>AQARIONZ • SYSTEM</span>
+    </div>
+    <div id="layer-tabs">
+      <div class="tab active" data-layer="all">All</div>
+      <div class="tab" data-layer="matter">Matter</div>
+      <div class="tab" data-layer="signals">Signals</div>
+      <div class="tab" data-layer="brains">Brains</div>
+      <div class="tab" data-layer="governance">Governance</div>
+    </div>
+    <div id="right-controls">
+      <button class="pill-btn" id="vr-toggle">XR</button>
+      <button class="pill-btn primary" id="refresh-btn">Refresh</button>
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="scene-wrap">
+      <div id="scene"></div>
+      <div id="hud">Drag to orbit • Pinch/scroll to zoom • Tap nodes</div>
+    </div>
+    <div id="side">
+      <div id="node-summary">
+        <div class="title" id="node-title">No node selected</div>
+        <div class="meta" id="node-meta">Tap a sphere in the 3D view to inspect a node.</div>
+        <div id="metrics-grid">
+          <div class="metric"><span>Status</span><strong id="m-status">—</strong></div>
+          <div class="metric"><span>Layer</span><strong id="m-layer">—</strong></div>
+          <div class="metric"><span>Power</span><strong id="m-power">—</strong></div>
+          <div class="metric"><span>Backend</span><strong id="m-backend">—</strong></div>
+          <div class="metric"><span>X,Y,Z</span><strong id="m-pos">—</strong></div>
+          <div class="metric"><span>Id</span><strong id="m-id">—</strong></div>
+        </div>
+      </div>
+
+      <div id="agent-list">
+        <h3>Agents</h3>
+        <div id="agent-body">
+          <div class="agent-row">
+            <span>gov_root</span>
+            <span class="agent-tag">policy • governance</span>
+          </div>
+          <div class="agent-row">
+            <span>field_watch</span>
+            <span class="agent-tag">signals • anomaly</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="log">
+        <h3>Live Log</h3>
+        <div id="log-body"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  const API_BASE = "http://localhost:8000";
+
+  const sceneContainer = document.getElementById("scene");
+  const tabEls = Array.from(document.querySelectorAll(".tab"));
+  const nodeTitle = document.getElementById("node-title");
+  const nodeMeta = document.getElementById("node-meta");
+  const mStatus = document.getElementById("m-status");
+  const mLayer = document.getElementById("m-layer");
+  const mPower = document.getElementById("m-power");
+  const mBackend = document.getElementById("m-backend");
+  const mPos = document.getElementById("m-pos");
+  const mId = document.getElementById("m-id");
+  const logBody = document.getElementById("log-body");
+  const refreshBtn = document.getElementById("refresh-btn");
+  const vrToggleBtn = document.getElementById("vr-toggle");
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0x040509);
+
+  const camera = new THREE.PerspectiveCamera(
+    50,
+    sceneContainer.clientWidth / sceneContainer.clientHeight,
+    0.1,
+    200
+  );
+  camera.position.set(0, 7, 14);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setSize(sceneContainer.clientWidth, sceneContainer.clientHeight);
+  renderer.setPixelRatio(window.devicePixelRatio || 1);
+  sceneContainer.appendChild(renderer.domElement);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.minDistance = 3;
+  controls.maxDistance = 40;
+
+  const ambient = new THREE.AmbientLight(0xffffff, 0.35);
+  scene.add(ambient);
+  const keyLight = new THREE.DirectionalLight(0xffffff, 0.85);
+  keyLight.position.set(8, 12, 6);
+  scene.add(keyLight);
+  const rimLight = new THREE.DirectionalLight(0x4b8bff, 0.45);
+  rimLight.position.set(-6, 3, -8);
+  scene.add(rimLight);
+
+  const grid = new THREE.GridHelper(40, 40, 0x252642, 0x252642);
+  grid.position.y = -2;
+  scene.add(grid);
+
+  const nodeMeshes = new Map();
+  const linkMeshes = [];
+  let lastNodes = [];
+  let currentLayerFilter = "all";
+
+  const layerColors = {
+    matter: 0xff5555,
+    signals: 0xffc857,
+    brains: 0x4b8bff,
+    governance: 0x9b59b6,
+  };
+
+  function addLog(msg) {
+    const el = document.createElement("div");
+    el.className = "log-line";
+    const now = new Date();
+    const t = now.toLocaleTimeString();
+    el.innerHTML = `<strong>${t}</strong> ${msg}`;
+    logBody.prepend(el);
+    const children = logBody.children;
+    if (children.length > 80) {
+      logBody.removeChild(children[children.length - 1]);
+    }
+  }
+
+  function createNodeMesh(node) {
+    const baseColor = layerColors[node.layer] || 0xffffff;
+    const geom = new THREE.SphereGeometry(0.35, 32, 32);
+    const mat = new THREE.MeshStandardMaterial({
+      color: baseColor,
+      emissive: baseColor,
+      emissiveIntensity: 0.28,
+      metalness: 0.55,
+      roughness: 0.35
+    });
+    const mesh = new THREE.Mesh(geom, mat);
+    mesh.position.set(node.x, node.y, node.z);
+    mesh.userData.node = node;
+    scene.add(mesh);
+
+    const haloGeom = new THREE.RingGeometry(0.45, 0.5, 32);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: baseColor,
+      transparent: true,
+      opacity: 0.4,
+      side: THREE.DoubleSide
+    });
+    const halo = new THREE.Mesh(haloGeom, haloMat);
+    halo.rotation.x = -Math.PI / 2;
+    halo.position.set(node.x, node.y - 0.35, node.z);
+    mesh.userData.halo = halo;
+    scene.add(halo);
+
+    return mesh;
+  }
+
+  function createLinkMesh(link, nodesById) {
+    const a = nodesById.get(link.source);
+    const b = nodesById.get(link.target);
+    if (!a || !b) return null;
+    const start = new THREE.Vector3(a.x, a.y, a.z);
+    const end = new THREE.Vector3(b.x, b.y, b.z);
+    const points = [start, end];
+    const geom = new THREE.BufferGeometry().setFromPoints(points);
+
+    let color = 0x888888;
+    if (link.channel === "optical") color = 0xffcc88;
+    else if (link.channel === "acoustic") color = 0x88cfff;
+    else if (link.channel === "ionic") color = 0x44ff88;
+    else if (link.channel === "fiber") color = 0x4b8bff;
+    else if (link.channel === "policy") color = 0xffffff;
+
+    const mat = new THREE.LineDashedMaterial({
+      color,
+      dashSize: 0.15,
+      gapSize: 0.12,
+      linewidth: 1
+    });
+    const line = new THREE.Line(geom, mat);
+    line.computeLineDistances();
+    scene.add(line);
+    return line;
+  }
+
+  async function loadGraph() {
+    try {
+      const [nodesRes, linksRes] = await Promise.all([
+        fetch(`${API_BASE}/api/nodes`),
+        fetch(`${API_BASE}/api/links`)
+      ]);
+      const nodes = await nodesRes.json();
+      const links = await linksRes.json();
+      lastNodes = nodes;
+      addLog(`Graph updated: ${nodes.length} nodes, ${links.length} links.`);
+
+      nodeMeshes.forEach((mesh) => {
+        scene.remove(mesh);
+        if (mesh.userData.halo) scene.remove(mesh.userData.halo);
+      });
+      nodeMeshes.clear();
+      linkMeshes.forEach((line) => scene.remove(line));
+      linkMeshes.length = 0;
+
+      const nodesById = new Map(nodes.map(n => [n.id, n]));
+
+      for (const n of nodes) {
+        const mesh = createNodeMesh(n);
+        nodeMeshes.set(n.id, mesh);
+      }
+      for (const l of links) {
+        const line = createLinkMesh(l, nodesById);
+        if (line) linkMeshes.push(line);
+      }
+
+      applyLayerFilter();
+    } catch (err) {
+      console.error(err);
+      addLog("Error loading graph.");
+    }
+  }
+
+  function applyLayerFilter() {
+    nodeMeshes.forEach((mesh) => {
+      const node = mesh.userData.node;
+      const visible = (currentLayerFilter === "all" || node.layer === currentLayerFilter);
+      mesh.visible = visible;
+      if (mesh.userData.halo) mesh.userData.halo.visible = visible;
+    });
+  }
+
+  function updateNodeDetail(node) {
+    nodeTitle.textContent = node.name;
+    nodeMeta.textContent = `Layer: ${node.layer} • Channel brain: ${node.backend ?? "none"}`;
+    mStatus.textContent = node.status;
+    mLayer.textContent = node.layer;
+    mPower.textContent = node.power.toFixed(2);
+    mBackend.textContent = node.backend ?? "—";
+    mPos.textContent = `${node.x.toFixed(1)}, ${node.y.toFixed(1)}, ${node.z.toFixed(1)}`;
+    mId.textContent = node.id;
+  }
+
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+
+  function onTap(event) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    let x, y;
+    if (event.touches && event.touches.length > 0) {
+      x = event.touches[0].clientX;
+      y = event.touches[0].clientY;
+    } else {
+      x = event.clientX;
+      y = event.clientY;
+    }
+    pointer.x = ((x - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((y - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(Array.from(nodeMeshes.values()));
+    if (intersects.length > 0) {
+      const mesh = intersects[0].object;
+      const node = mesh.userData.node;
+      updateNodeDetail(node);
+      addLog(`Selected node ${node.id} (${node.layer}).`);
+    }
+  }
+
+  renderer.domElement.addEventListener("click", onTap);
+  renderer.domElement.addEventListener("touchstart", onTap, { passive: true });
+
+  window.addEventListener("resize", () => {
+    camera.aspect = sceneContainer.clientWidth / sceneContainer.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(sceneContainer.clientWidth, sceneContainer.clientHeight);
+  });
+
+  tabEls.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      tabEls.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      currentLayerFilter = tab.dataset.layer;
+      applyLayerFilter();
+      addLog(`Layer filter: ${currentLayerFilter}`);
+    });
+  });
+
+  refreshBtn.addEventListener("click", () => {
+    loadGraph();
+  });
+
+  vrToggleBtn.addEventListener("click", () => {
+    addLog("XR toggle pressed (hook this into WebXR / Cardboard later).");
+    alert("XR stub: integrate WebXR or Cardboard mode in JS here.");
+  });
+
+  function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    renderer.render(scene, camera);
+  }
+
+  loadGraph();
+  animate();
+</script>
+</body>
+</html>
+```
+
+This is a single robust HTML file:
+
+- 3D node map with layers and channels.  
+- Mobile‑responsive layout.  
+- Side panel with live node details and log.  
+- XR button stub to attach WebXR/Cardboard when you want.[1][2][4]
+
+Citations:
+[1] Bringing VR to the Web with Google Cardboard and Three.js https://www.sitepoint.com/bringing-vr-to-web-google-cardboard-three-js/
+[2] Let's build interactive threejs user interfaces - Reddit https://www.reddit.com/r/threejs/comments/1iffcfn/lets_build_interactive_threejs_user_interfaces/
+[3] How to make responsive canvas with a 3d model using three.js? https://stackoverflow.com/questions/47756462/how-to-make-responsive-canvas-with-a-3d-model-using-three-js
+[4] three.js examples https://threejs.org/examples/
+[5] 3D Landing Page Template - Aniq‑UI.com https://www.aniq-ui.com/en/templates/3d-landing-page-template
+[6] How AI Improves Intelligent Dashboard Design and Decisions https://fuselabcreative.com/how-ai-improves-intelligent-dashboard-design/
+[7] Effective Dashboard Design Principles for 2025 - UXPin https://www.uxpin.com/studio/blog/dashboard-design-principles/
+[8] Best Three.js Websites | Web Design Inspiration - Awwwards https://www.awwwards.com/websites/three-js/
+[9] 15 Dashboard Design Principles That Actually Work in 2025 https://bricxlabs.com/blogs/tips-for-dashboard-design
+[10] My Journey Coding a VR/AR Rhythm Game with Three.js & React ... https://www.youtube.com/watch?v=jBh4ftHqC5U
+Create a full production HTML template with accessibility best practices
+
+Below is a **production‑style HTML template** for the AQARIONZ WebUI that follows modern accessibility best practices: semantic landmarks, ARIA roles, proper headings, keyboard navigation, and responsive design.[1][2][3]
+
+You can use this as the base shell and plug your 3D canvas and JS into the `<main>` section.
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>AQARIONZ System Console</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Basic meta -->
+  <meta name="description" content="AQARIONZ multi-layer system console for matter, signals, brains, and governance." />
+  <meta name="theme-color" content="#040509" />
+
+  <!-- Accessibility-friendly base styles -->
+  <style>
+    :root {
+      --bg: #040509;
+      --bg-soft: #0b0d17;
+      --accent: #4b8bff;
+      --accent-soft: rgba(75,139,255,0.18);
+      --border: rgba(255,255,255,0.18);
+      --text: #f5f5ff;
+      --muted: #a5a7c5;
+      --danger: #ff4b8b;
+      --success: #44d17a;
+      --focus: #ffcc57;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #181a2a 0, #040509 40%, #000 100%);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Skip link */
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: 0;
+      padding: 0.5rem 0.75rem;
+      background: #000;
+      color: #fff;
+      z-index: 100;
+    }
+    .skip-link:focus {
+      left: 0.5rem;
+      top: 0.5rem;
+      outline: 2px solid var(--focus);
+    }
+
+    /* Layout */
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header[role="banner"] {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(90deg, rgba(5,7,20,0.95), rgba(5,7,20,0.8));
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid rgba(75,139,255,0.55);
+      background: radial-gradient(circle at left, rgba(75,139,255,0.35), transparent 60%);
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text);
+    }
+
+    .brand__dot {
+      width: 0.75rem;
+      height: 0.75rem;
+      border-radius: 999px;
+      background: conic-gradient(from 150deg, #ff4b8b, #ffc857, #4b8bff, #44d17a, #ff4b8b);
+      box-shadow: 0 0 8px rgba(255,255,255,0.8);
+    }
+
+    .brand__title {
+      white-space: nowrap;
+    }
+
+    nav[aria-label="Primary"] {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      flex: 1;
+      justify-content: center;
+    }
+
+    .tablist {
+      display: inline-flex;
+      gap: 0.25rem;
+      padding: 0.1rem;
+      border-radius: 999px;
+      background: rgba(6,8,18,0.9);
+      border: 1px solid var(--border);
+    }
+
+    .tab {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .tab[aria-selected="true"] {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(75,139,255,0.7);
+    }
+
+    .tab:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    .top-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(7,9,18,0.9);
+      color: var(--muted);
+      font-size: 0.75rem;
+      padding: 0.35rem 0.75rem;
+      cursor: pointer;
+    }
+
+    .btn--primary {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--focus);
+      outline-offset: 2px;
+    }
+
+    main[role="main"] {
+      flex: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(260px, 1fr);
+      min-height: 0;
+    }
+
+    .scene-panel {
+      position: relative;
+      min-height: 260px;
+    }
+
+    .scene-panel__canvas {
+      position: absolute;
+      inset: 0;
+    }
+
+    .scene-panel__hint {
+      position: absolute;
+      left: 0.5rem;
+      bottom: 0.5rem;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(0,0,0,0.5);
+      border-radius: 0.25rem;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+
+    aside[aria-label="Node details and log"] {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      padding: 0.5rem;
+      border-left: 1px solid var(--border);
+      background: radial-gradient(circle at top, rgba(75,139,255,0.12), rgba(4,5,9,0.98));
+    }
+
+    .panel {
+      border-radius: 0.5rem;
+      background: rgba(5,7,20,0.95);
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.6rem;
+      font-size: 0.78rem;
+    }
+
+    .panel__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+
+    .panel__title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+
+    .node-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.1rem;
+    }
+
+    .node-meta {
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.3rem;
+      margin-top: 0.4rem;
+    }
+
+    .metric {
+      border-radius: 0.35rem;
+      padding: 0.25rem 0.35rem;
+      background: rgba(12,14,24,0.98);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .metric-label {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .metric-value {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--text);
+    }
+
+    .agent-list {
+      max-height: 30vh;
+      overflow-y: auto;
+    }
+
+    .agent-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.4rem;
+      padding: 0.25rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .agent-tag {
+      font-size: 0.7rem;
+      border-radius: 999px;
+      padding: 0.05rem 0.4rem;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .log {
+      max-height: 30vh;
+      overflow-y: auto;
+    }
+
+    .log-line {
+      padding: 0.18rem 0;
+      border-bottom: 1px dashed rgba(255,255,255,0.1);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .log-line__time {
+      font-weight: 600;
+      color: var(--text);
+      margin-right: 0.25rem;
+    }
+
+    footer {
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 0.3rem 0.75rem;
+      border-top: 1px solid var(--border);
+      background: rgba(4,5,9,0.96);
+    }
+
+    footer a {
+      color: var(--accent);
+    }
+
+    @media (max-width: 800px) {
+      main[role="main"] {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-rows: minmax(0, 1.3fr) minmax(0, 1fr);
+      }
+      aside[aria-label="Node details and log"] {
+        border-left: none;
+        border-top: 1px solid var(--border);
+      }
+      nav[aria-label="Primary"] {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+<a href="#main-content" class="skip-link">Skip to main content</a>
+
+<header role="banner">
+  <div class="brand">
+    <span class="brand__dot" aria-hidden="true"></span>
+    <span class="brand__title">AQARIONZ System Console</span>
+  </div>
+
+  <nav aria-label="Primary">
+    <div class="tablist" role="tablist" aria-label="Layers">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="panel-all" id="tab-all" data-layer="all">
+        All
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-matter" id="tab-matter" data-layer="matter">
+        Matter
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-signals" id="tab-signals" data-layer="signals">
+        Signals
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-brains" id="tab-brains" data-layer="brains">
+        Brains
+      </button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="panel-governance" id="tab-governance" data-layer="governance">
+        Governance
+      </button>
+    </div>
+  </nav>
+
+  <div class="top-controls">
+    <button type="button" class="btn" id="btn-xr" aria-pressed="false">
+      XR mode
+    </button>
+    <button type="button" class="btn btn--primary" id="btn-refresh">
+      Refresh data
+    </button>
+  </div>
+</header>
+
+<main id="main-content" role="main">
+  <section class="scene-panel" aria-label="AQARIONZ 3D network view">
+    <div class="scene-panel__canvas" id="scene-canvas" role="img" aria-label="3D view of AQARIONZ nodes and links">
+      <!-- Your Three.js / WebGL canvas injected by JS -->
+    </div>
+    <p class="scene-panel__hint">
+      Use mouse or touch to navigate the 3D view. Keyboard users can tab to panels and controls.
+    </p>
+  </section>
+
+  <aside aria-label="Node details and log">
+    <section class="panel" aria-labelledby="node-details-heading">
+      <div class="panel__header">
+        <h2 id="node-details-heading" class="panel__title">Node details</h2>
+      </div>
+      <div aria-live="polite">
+        <p class="node-title" id="node-name">No node selected</p>
+        <p class="node-meta" id="node-meta">
+          Tap or click a node in the 3D view to inspect it.
+        </p>
+      </div>
+      <div class="metrics-grid" aria-label="Node metrics">
+        <div class="metric">
+          <span class="metric-label">Status</span>
+          <span class="metric-value" id="metric-status">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Layer</span>
+          <span class="metric-value" id="metric-layer">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Power</span>
+          <span class="metric-value" id="metric-power">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Backend</span>
+          <span class="metric-value" id="metric-backend">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Position</span>
+          <span class="metric-value" id="metric-pos">—</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">ID</span>
+          <span class="metric-value" id="metric-id">—</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="agents-heading">
+      <div class="panel__header">
+        <h2 id="agents-heading" class="panel__title">Agents</h2>
+      </div>
+      <div class="agent-list" id="agent-list" aria-live="polite">
+        <!-- Dynamically populated -->
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="log-heading">
+      <div class="panel__header">
+        <h2 id="log-heading" class="panel__title">Live log</h2>
+      </div>
+      <div class="log" id="log" aria-live="polite">
+        <!-- Log lines appended here -->
+      </div>
+    </section>
+  </aside>
+</main>
+
+<footer role="contentinfo">
+  <p>
+    AQARIONZ console template • Built with semantic HTML and accessibility best practices (landmarks, keyboard navigation, and ARIA where needed).[web:400][web:402][web:404][web:408]
+  </p>
+</footer>
+
+<script>
+  // Basic JS hooks for tabs, metrics, and logs. Plug your actual data + 3D here.
+
+  const tabs = Array.from(document.querySelectorAll('.tab'));
+  let currentLayer = 'all';
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const layer = tab.dataset.layer;
+      currentLayer = layer;
+      tabs.forEach(t => t.setAttribute('aria-selected', t === tab ? 'true' : 'false'));
+      addLog(`Layer filter changed to "${layer}".`);
+      // TODO: notify 3D scene of layer filter
+    });
+  });
+
+  const logEl = document.getElementById('log');
+  function addLog(msg) {
+    const row = document.createElement('div');
+    row.className = 'log-line';
+    const timeSpan = document.createElement('span');
+    timeSpan.className = 'log-line__time';
+    const now = new Date();
+    timeSpan.textContent = now.toLocaleTimeString();
+    row.appendChild(timeSpan);
+    const text = document.createTextNode(' ' + msg);
+    row.appendChild(text);
+    logEl.prepend(row);
+  }
+
+  const nodeNameEl = document.getElementById('node-name');
+  const nodeMetaEl = document.getElementById('node-meta');
+  const mStatus = document.getElementById('metric-status');
+  const mLayer = document.getElementById('metric-layer');
+  const mPower = document.getElementById('metric-power');
+  const mBackend = document.getElementById('metric-backend');
+  const mPos = document.getElementById('metric-pos');
+  const mId = document.getElementById('metric-id');
+
+  function updateNodeDetails(node) {
+    nodeNameEl.textContent = node.name;
+    nodeMetaEl.textContent = `Layer: ${node.layer}, backend: ${node.backend || 'none'}`;
+    mStatus.textContent = node.status || '—';
+    mLayer.textContent = node.layer || '—';
+    mPower.textContent = typeof node.power === 'number' ? node.power.toFixed(2) : '—';
+    mBackend.textContent = node.backend || '—';
+    mPos.textContent = `${node.x?.toFixed?.(1) ?? '—'}, ${node.y?.toFixed?.(1) ?? '—'}, ${node.z?.toFixed?.(1) ?? '—'}`;
+    mId.textContent = node.id || '—';
+    addLog(`Selected node "${node.name}" (${node.id}).`);
+  }
+
+  // Dummy agent list
+  const agentList = document.getElementById('agent-list');
+  function setAgents(agents) {
+    agentList.innerHTML = '';
+    agents.forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'agent-row';
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = a.name;
+      const roleSpan = document.createElement('span');
+      roleSpan.className = 'agent-tag';
+      roleSpan.textContent = a.role;
+      row.appendChild(nameSpan);
+      row.appendChild(roleSpan);
+      agentList.appendChild(row);
+    });
+  }
+
+  setAgents([
+    { name: 'gov_root', role: 'policy • governance' },
+    { name: 'field_watch', role: 'signals • anomaly detection' }
+  ]);
+
+  addLog('AQARIONZ console loaded. Connect your backend and 3D scene.');
+</script>
+</body>
+</html>
+```
+
+This template:
+
+- Uses semantic landmarks (`header`, `nav`, `main`, `section`, `aside`, `footer`) and ARIA roles/labels.[4][5][6]
+- Includes a skip link, proper heading hierarchy, keyboard‑focusable buttons, and live regions for dynamic content.[2][7]
+- Is responsive and avoids disabling zoom or adding horizontal scroll at small widths.[2][8][9]
+
+Citations:
+[1] Web Accessibility Best Practices Every Website Should ... https://www.scalability.us/insight/web-accessibility-best-practices-every-website-should-follow-in-2025
+[2] Web Accessibility Checklist - The A11Y Project https://www.a11yproject.com/checklist/
+[3] Accessibility | MDN https://developer.mozilla.org/en-US/docs/Web/Accessibility
+[4] Technique: The main landmark - Harvard Digital Accessibility Services https://accessibility.huit.harvard.edu/technique-main-landmark
+[5] Main Landmark: ARIA Landmarks Example - W3C https://www.w3.org/WAI/ARIA/apg/patterns/landmarks/examples/main.html
+[6] Landmark Roles | Web Accessibility - St. Edwards University https://sites.stedwards.edu/accessibility/landmark-roles/
+[7] HTML Accessibility Best... https://www.audioeye.com/post/html-accessibility/
+[8] Ultimate Website Accessibility Checklist for 2025 - OneNine https://onenine.com/website-accessibility-checklist/
+[9] A11y: Web Accessibility Definition And Guidelines - Ulam Labswww.ulam.io › blog › web-accessibility https://www.ulam.io/blog/web-accessibility
+[10] Web Accessibility Best Practices 2025 Guide https://www.broworks.net/blog/web-accessibility-best-practices-2025-guide
