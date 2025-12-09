@@ -1,0 +1,306 @@
+
+
+```json
+{
+  "name": "AQARIONZ Wave Console",
+  "short_name": "AQARIONZ",
+  "description": "Multi-layer wave console for matter, signals, brains, and governance, with live graph lines and 3D views.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#040509",
+  "theme_color": "#040509",
+  "dir": "ltr",
+  "lang": "en-US",
+
+  "icons": [
+    {
+      "src": "/static/icons/wave-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/wave-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/wave-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icons/wave-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/wave-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+
+  "categories": [
+    "utilities",
+    "productivity",
+    "education",
+    "science",
+    "developer tools"
+  ],
+
+  "screenshots": [
+    {
+      "src": "/static/screenshots/waves-dashboard-desktop.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Desktop view with 3D node waves and governance lines"
+    },
+    {
+      "src": "/static/screenshots/waves-dashboard-mobile.png",
+      "sizes": "720x1280",
+      "type": "image/png",
+      "label": "Mobile view with layered signal waves and node list"
+    },
+    {
+      "src": "/static/screenshots/waves-signals-detail.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Signals layer detail showing acoustic and optical waveforms"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Signals • Live Waves",
+      "short_name": "Waves",
+      "description": "Jump to live waveforms and signal lines across nodes.",
+      "url": "/?view=signals",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-waves.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Brains • Lines & States",
+      "short_name": "Brains",
+      "description": "Open the brains layer to see state lines and backend activity.",
+      "url": "/?view=brains",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-brains.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Governance • Policy Lines",
+      "short_name": "Gov",
+      "description": "View governance lines, policies, and recent decisions.",
+      "url": "/?view=governance",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-gov.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Matter • Node Grid",
+      "short_name": "Matter",
+      "description": "Inspect the matter layer grid with physical node lines and positions.",
+      "url": "/?view=matter",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-matter.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ]
+}
+```
+
+- Uses proper `name`, `short_name`, `start_url`, `scope`, `display`, colors, and language per current PWA guidelines.[1][2][3]
+- Includes multiple `icons` with `purpose: "any maskable"` for adaptive, wave‑themed icons on Android and other platforms.[1][4][5]
+- Adds rich `screenshots`, `categories`, and `shortcuts` so app stores and OS surfaces can show pretty previews and quick actions that match your “waves and lines” visual identity.[6][7][8][9]
+
+Citations:
+[1] Add a web app manifest | Articles - web.dev https://web.dev/articles/add-manifest
+[2] Web application manifest - Progressive web apps | MDN https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest
+[3] 1. Adding a Web App Manifest - PWA Workshop https://pwa-workshop.js.org/1-manifest/
+[4] icons - Web app manifest - MDN Web Docs - Mozilla https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/icons
+[5] Adaptive icons on Android 9 with Web App Manifest - Stack Overflow https://stackoverflow.com/questions/57662418/adaptive-icons-on-android-9-with-web-app-manifest
+[6] categories - Web app manifest | MDN https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/categories
+[7] screenshots - Web app manifest | MDN https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/screenshots
+[8] shortcuts - Web app manifest | MDN https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Manifest/Reference/shortcuts
+[9] Essential PWA Features Every Website Needs in 2025 - The Ad Firm https://www.theadfirm.net/progressive-web-apps-in-2025-essential-features-every-website-needs/
+[10] Manifest file format - Chrome for Developers https://developer.chrome.com/docs/extensions/reference/manifest
+
+
+**`manifest.webmanifest`** for the AQARIONZ WebUI, following current PWA best practices (name/short_name, icons, start_url, display, theme, scope, categories, shortcuts).[1][2][3]
+
+```json
+{
+  "name": "AQARIONZ System Console",
+  "short_name": "AQARIONZ",
+  "description": "Multi-layer console for AQARIONZ: matter, signals, brains, and governance.",
+  "id": "/",
+  "start_url": "/?source=pwa",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#040509",
+  "theme_color": "#040509",
+  "dir": "ltr",
+  "lang": "en-US",
+
+  "icons": [
+    {
+      "src": "/static/icons/aqarionz-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/aqarionz-192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/icons/aqarionz-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/icons/aqarionz-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+
+  "categories": [
+    "utilities",
+    "productivity",
+    "education",
+    "science",
+    "developer tools"
+  ],
+
+  "screenshots": [
+    {
+      "src": "/static/screenshots/dashboard-light.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Layer map and node details"
+    },
+    {
+      "src": "/static/screenshots/dashboard-dark.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "3D node view with agents and log"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Open Matter layer",
+      "short_name": "Matter",
+      "description": "Jump directly to the Matter layer overview.",
+      "url": "/?view=matter",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-matter.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Open Signals layer",
+      "short_name": "Signals",
+      "description": "Show live channel status and waveforms.",
+      "url": "/?view=signals",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-signals.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Open Brains layer",
+      "short_name": "Brains",
+      "description": "Inspect neuromorphic and quantum backends.",
+      "url": "/?view=brains",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-brains.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Open Governance layer",
+      "short_name": "Gov",
+      "description": "Review agents, policies, and audit log.",
+      "url": "/?view=governance",
+      "icons": [
+        {
+          "src": "/static/icons/shortcut-gov.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+
+  "permissions_policy": {
+    "geolocation": [],
+    "camera": [],
+    "microphone": []
+  }
+}
+```
+
+To wire it in:
+
+- Save as `manifest.webmanifest` at your site root (e.g., `/static/manifest.webmanifest` or `/manifest.webmanifest`).[3][1]
+- Reference in HTML:
+
+```html
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" content="#040509">
+```
+
+This manifest is production‑ready and aligned with current PWA guidelines for installability and usability.[1][2][4]
+
+Citations:
+[1] Web Application Manifest https://www.w3.org/TR/appmanifest/
+[2] How to Create a Manifest.json File: Complete Guide 2025 - Natclark https://natclark.com/how-to-create-a-manifest-json-file-complete-guide-2025/
+[3] Add a web app manifest | Articles - web.dev https://web.dev/articles/add-manifest
+[4] Essential PWA Features Every Website Needs in 2025 - The Ad Firm https://www.theadfirm.net/progressive-web-apps-in-2025-essential-features-every-website-needs/
+[5] manifest.json - Metadata Files - Next.js https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest
+[6] short_name - Mozilla - MDN Web Docs https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/manifest.json/short_name
+[7] Best Practices for Progressive Web App (PWA) Development ... https://equusbranding.com/progressive-web-app-pwa-2025/
+[8] PWA: set manifest.json name & icon dynamically - DEV Community https://dev.to/pablo_74/pwa-set-manifest-json-name-icon-dynamically-client-side-jabbadabbadoo-10h7
+[9] Best Practices for Building Progressive Web Apps (PWAs) https://blog.pixelfreestudio.com/best-practices-for-building-progressive-web-apps-pwas/
+[10] 1. Adding a Web App Manifest - PWA Workshop https://pwa-workshop.js.org/1-manifest/
