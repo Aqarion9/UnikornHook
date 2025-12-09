@@ -1,0 +1,42 @@
+contributor s
+
+Here is a simple `CONTRIBUTORS.md` you can drop into the repo and extend over time.
+
+```markdown
+# Contributors
+
+AQARIONZ & UnikornHook are open projects. This file acknowledges people who have contributed code, ideas, documentation, or testing.
+
+## Core maintainers
+
+- **Aqarion9**  
+  Founder and original author of AQARIONZ and UnikornHook.  
+  Responsible for overall architecture, multi‑layer design (Matter / Signals / Brains / Governance), and initial implementations of the Django backend, WebUI, and hook system.
+
+## Project roles
+
+- **Architecture & Design**  
+  Defines the layered model, graph schema, routing patterns, and governance concepts, and keeps the overall system coherent as new features are added.
+
+- **Backend & APIs**  
+  Implements and maintains the Django + DRF core, FastAPI services, and Pydantic models, ensuring the HTTP/JSON APIs stay consistent, well‑documented, and easy to consume.
+
+- **WebUI & UX**  
+  Designs and builds the responsive, accessible 3D console, including HTML structure, ARIA patterns, and visualization of nodes, links, agents, and telemetry.
+
+- **Hooks & Integrations (UnikornHook)**  
+  Develops the event/hook layer that connects edge devices, scripts, and other systems into the AQARIONZ graph, with reusable handlers and adapters.
+
+- **Documentation & Community**  
+  Writes and maintains docs, diagrams, examples, and onboarding material, and helps other people understand and extend the system.
+
+## How to be added
+
+If you contribute code, documentation, tests, design work, or significant ideas, you can:
+
+1. Open a pull request that adds your name and role(s) to this file, or  
+2. Open an issue titled “Add contributor: YOUR_NAME” with a brief note on what you worked on.
+
+All forms of contribution are welcome, including bug reports, feature requests, and feedback on architecture or usability.
+```
+
