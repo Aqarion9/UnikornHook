@@ -1,0 +1,85 @@
+
+
+```mermaid
+graph TD
+  %% Styles
+  classDef ui fill:#121a2a,stroke:#4b8bff,stroke-width:1px,color:#f5f5ff;
+  classDef api fill:#101622,stroke:#8a9bd9,stroke-width:1px,color:#f5f5ff;
+  classDef svc fill:#111111,stroke:#777,stroke-width:1px,color:#f5f5ff;
+  classDef layer fill:#050c18,stroke:#6dd5fa,stroke-width:1px,color:#f5f5ff;
+  classDef hook fill:#151515,stroke:#ff8ba7,stroke-width:1px,color:#f5f5ff,stroke-dasharray:4 3;
+
+  %% UI / Client Tier
+  subgraph CLIENT["Wave Console & Clients"]
+    UI["AQARIONZ Wave Console<br/>(3D graph, waves UI, PWA)"]:::ui
+    MOB["Native / Hybrid Clients<br/>(Android, iOS, others)"]:::ui
+  end
+
+  %% API Tier
+  subgraph API_TIER["API Layer"]
+    DJAPI["Django / DRF API<br/>/api/v1/graph /agents /telemetry"]:::api
+    FAPI["FastAPI Services<br/>(sim, adapters, validation)"]:::api
+  end
+
+  %% Core Services
+  subgraph CORE["Core Services & Data"]
+    DB["PostgreSQL / DB<br/>(nodes, links, agents, events)"]:::svc
+    LOG["Logs & Metrics Store"]:::svc
+  end
+
+  %% Hooks / Edge
+  subgraph EDGE["Field Devices & Hooks"]
+    HK["UnikornHook<br/>(event hooks, handlers)"]:::hook
+    DEV["Field Devices<br/>(junk rigs, plants, AUVs, labs)"]:::svc
+  end
+
+  %% AQARIONZ Layers
+  subgraph LAYERS["AQARIONZ Layers (graph model)"]
+    MAT["Matter Layer<br/>junk, bio, spin/quantum nodes"]:::layer
+    SIG["Signals Layer<br/>acoustic, optical, ionic, RF waves"]:::layer
+    BRN["Brains Layer<br/>LUT/SNN, fluidic, spin, quantum"]:::layer
+    GOV["Governance Layer<br/>agents, routing, policies"]:::layer
+  end
+
+  %% Client -> API
+  UI -->|"HTTPS / JSON (nodes, links, events)"| DJAPI
+  MOB -->|"HTTPS / JSON"| DJAPI
+  UI -->|"Optional gRPC / HTTP"| FAPI
+
+  %% API -> Core
+  DJAPI -->|"ORM / SQL"| DB
+  DJAPI -->|"events, audits"| LOG
+  FAPI -->|"read/write graph"| DJAPI
+
+  %% API -> Layers (logical)
+  DJAPI --> MAT
+  DJAPI --> SIG
+  DJAPI --> BRN
+  DJAPI --> GOV
+
+  %% Hooks + Devices
+  DEV -->|"raw events, signals"| HK
+  HK -->|"normalized events (JSON)"| DJAPI
+  HK -->|"optional direct calls"| FAPI
+
+  %% Layer interactions
+  MAT -->|"emits waves"| SIG
+  SIG -->|"features / reservoir states"| BRN
+  BRN -->|"detections, decisions"| GOV
+  GOV -->|"policies, control lines"| MAT
+  GOV -->|"routing rules"| SIG
+```
+
+This version avoids beta features like `block-beta` and sticks to widely supported flowchart syntax while still showing all key components and relationships.[1][2][3]
+
+Citations:
+[1] Flowcharts - Basic Syntax https://docs.mermaidchart.com/mermaid-oss/syntax/flowchart.html
+[2] Block Diagrams Documentation https://mermaid.js.org/syntax/block.html
+[3] Introducing Architecture Diagrams in Mermaid https://docs.mermaidchart.com/blog/posts/introducing-architecture-diagrams-in-mermaid
+[4] New Diagram: Architecture by NicolasNewman · Pull Request #5452 · mermaid-js/mermaid https://github.com/mermaid-js/mermaid/pull/5452
+[5] block-beta not rendering but graph TD does. what's wrong? #6334 https://github.com/orgs/mermaid-js/discussions/6334
+[6] Block Diagrams Documentation - Mermaid Chart https://docs.mermaidchart.com/mermaid-oss/syntax/block.html
+[7] Using Mermaid Diagrams 100x Better with Your Favorite AI / LLM App https://dev.to/yigit-konur/using-mermaid-diagrams-100x-better-with-your-favorite-ai-llm-app-3m1p
+[8] Architecture Diagrams Documentation (v11.1.0+) - Mermaid https://mermaid.js.org/syntax/architecture.html
+[9] Introducing Architecture Diagrams in Mermaid https://docs.mermaidchart.com/blog/posts/mermaid-supports-architecture-diagrams
+[10] Mermaid block diagram issue - Help - Obsidian Forum https://forum.obsidian.md/t/mermaid-block-diagram-issue/78454
