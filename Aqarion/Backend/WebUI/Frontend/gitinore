@@ -1,0 +1,59 @@
+gitinoire
+
+Here is a good `.gitignore` for your AQARIONZ Python/Django + FastAPI + WebUI project.
+
+```gitignore
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pdb
+*.so
+*.egg-info/
+.eggs/
+.python-version
+
+# Virtual envs
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# Django
+db.sqlite3
+media/
+staticfiles/
+*.log
+
+# FastAPI / general
+*.sqlite3
+
+# Node / WebUI
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+dist/
+build/
+.cache/
+*.tsbuildinfo
+
+# IDE / editors
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+*.pid
+.gitignore~
+```
+
