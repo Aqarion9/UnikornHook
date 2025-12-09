@@ -1,0 +1,311 @@
+fullmermaid
+
+Below is a **full Mermaid pack** for AQARIONZ: architecture, sequence, class, and state diagrams, using current Mermaid syntax (including block diagrams) so you can drop them into docs or a Mermaid viewer.[1][2][3][4]
+
+***
+
+## Architecture block diagram
+
+```mermaid
+block-beta
+  columns 4
+  space 4
+
+  UI["Web UI\n(3D view, PWA, ARIA)"]
+  API["Django / DRF API\n/api/v1/*"]
+  FAST["FastAPI services\n(sim, adapters)"]
+  DB["Database\n(PostgreSQL)"]
+
+  GPH["graph app\nnodes & links"]
+  AGT["agents app\nmulti-agent governance"]
+  TEL["telemetry app\nevents & metrics"]
+  CORE["core utils\npagination, perms"]
+
+  MAT["Matter layer\njunk/bio/spin nodes"]
+  SIG["Signals layer\nacoustic/optical/ionic/RF"]
+  BRN["Brains layer\nLUT/SNN, fluidic, spin/q"]
+  GOV["Governance layer\npolicies, routing, audit"]
+
+  EXTQ["Quantum / spin labs\nremote services"]
+  EXTA["Underwater AUV mesh\nedge swarms"]
+  STORE["Long-term storage\nlogs & snapshots"]
+
+  %% Row 1
+  UI --> API
+  UI --> FAST
+  API --> DB
+
+  %% Row 2
+  API --> GPH
+  API --> AGT
+  API --> TEL
+  API --> CORE
+
+  %% Row 3
+  GPH --> MAT
+  GPH --> SIG
+  GPH --> BRN
+  AGT --> GOV
+  TEL --> STORE
+
+  %% Layer interactions
+  MAT --> SIG
+  SIG --> BRN
+  BRN --> GOV
+  GOV --> MAT
+  GOV --> SIG
+
+  %% External systems
+  BRN --> EXTQ
+  SIG --> EXTA
+```
+
+***
+
+## Sequence: device → API → UI
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Dev as Edge Device<br/>(junk node / AUV)
+  participant API as Django API<br/>(/api/v1)
+  participant DB as DB
+  participant UI as Web UI<br/>(browser / mobile)
+
+  Dev->>API: POST /api/v1/graph/nodes {id, layer, power, backend}
+  API->>DB: Insert/Update Node
+  DB-->>API: OK
+  API-->>Dev: 201 Created {node JSON}
+
+  UI->>API: GET /api/v1/graph/nodes
+  API->>DB: SELECT nodes, filters
+  DB-->>API: rows
+  API-->>UI: 200 OK [nodes]
+
+  UI->>API: GET /api/v1/graph/links
+  API->>DB: SELECT links
+  DB-->>API: rows
+  API-->>UI: 200 OK [links]
+
+  Note over UI: Render 3D graph<br/>with node layers & channels
+```
+
+***
+
+## Class diagram: core model types
+
+```mermaid
+classDiagram
+  class Node {
+    +str id
+    +str name
+    +str layer
+    +float x
+    +float y
+    +float z
+    +str status
+    +float power
+    +str backend
+  }
+
+  class Link {
+    +int id
+    +str source_id
+    +str target_id
+    +str channel
+    +float weight
+  }
+
+  class Agent {
+    +str id
+    +str name
+    +str role
+    +bool enabled
+    +datetime last_heartbeat
+    +dict config
+  }
+
+  class Event {
+    +int id
+    +datetime timestamp
+    +str severity
+    +str message
+    +dict extra
+  }
+
+  Node "1" <-- "many" Link : source
+  Node "1" <-- "many" Link : target
+  Node "1" <-- "many" Agent : runs_on
+  Node "0..1" <-- "many" Event : node
+  Agent "0..1" <-- "many" Event : agent
+```
+
+***
+
+## State diagram: node lifecycle
+
+```mermaid
+stateDiagram-v2
+  [*] --> Provisioning
+
+  Provisioning --> Online: registered + healthy
+  Provisioning --> Offline: registration failed
+
+  Online --> Degraded: low power / high error
+  Degraded --> Online: recovered
+  Online --> Offline: heartbeat lost
+  Degraded --> Offline: failure
+
+  Offline --> Online: rejoin / reboot
+
+  Online --> Retired: governance policy
+  Offline --> Retired: decommissioned
+  Retired --> [*]
+```
+
+These “full Mermaid” snippets cover architecture, flow, data model, and behavior, and can be adapted for any deployment or client that needs to understand or document AQARIONZ.[2][1][3][5]
+
+Citations:
+[1] Block Diagrams Documentation https://mermaid.js.org/syntax/block.html
+[2] Block Diagrams Documentation - Mermaid Chart https://docs.mermaidchart.com/mermaid-oss/syntax/block.html
+[3] Class Diagram https://docs.mermaidchart.com/mermaid-oss/syntax/classDiagram.html
+[4] Mermaid Diagrams: A Guide with Miro https://miro.com/diagramming/what-is-mermaid/
+[5] Visualizing Microservices Architecture with Mermaid: A Simple and Effective Tool https://www.linkedin.com/pulse/visualizing-microservices-architecture-mermaid-simple-fl%C3%A1vio-andr%C3%A9-8lx5f
+[6] How to Create Stunning Mermaid Diagrams (With Examples) https://clickup.com/blog/mermaid-diagram-examples/
+[7] Block Diagrams - Paradime Help Docs https://docs.paradime.io/app-help/documentation/integrations/code-ide/mermaid-js/block-diagrams
+[8] Class Diagram | Mermaid Viewer Docs https://docs.mermaidviewer.com/diagrams/class.html
+[9] Block Diagrams Documentation | Paradime Help Docs https://docs.paradime.io/app-help/documentation/integrations/code-ide/mermaid-js/block-diagrams-documentation
+[10] Class diagrams — mermaid 0.0.1 文档 https://daobook.github.io/mermaid/classDiagram.html
+
+
+```mermaid
+flowchart LR
+  %% STYLE
+  classDef layer fill:#0b1020,stroke:#4b8bff,stroke-width:1px,color:#f5f5ff;
+  classDef box fill:#070915,stroke:#666,stroke-width:1px,color:#f5f5ff;
+  classDef ext fill:#151515,stroke:#888,stroke-dasharray:3 3,color:#ddd;
+
+  %% WEB UI + BACKEND
+
+  subgraph UI["AQARIONZ WebUI (Browser)"]
+    UI_HDR["Header & Nav (ARIA,<br/>skip links, responsive layout)"]:::box
+    UI_3D["3D/VR View (Three.js/WebGL)<br/>Nodes, links, layers"]:::box
+    UI_PAN["Side Panels<br/>Node details, Agents, Live log"]:::box
+
+    UI_HDR --> UI_3D
+    UI_HDR --> UI_PAN
+  end
+
+  subgraph API["Django Backend / DRF API"]
+    direction TB
+    API_ROOT["/api/v1/* (versioned REST API)"]:::box
+
+    subgraph API_GRAPH["graph app"]
+      G_NODE["NodeViewSet<br/>/graph/nodes"]:::box
+      G_LINK["LinkViewSet<br/>/graph/links"]:::box
+    end
+
+    subgraph API_AGENTS["agents app"]
+      A_AGENT["AgentViewSet<br/>/agents/agents"]:::box
+    end
+
+    subgraph API_TELE["telemetry app"]
+      T_EVENTS["EventViewSet<br/>/telemetry/events"]:::box
+    end
+
+    API_ROOT --> G_NODE
+    API_ROOT --> G_LINK
+    API_ROOT --> A_AGENT
+    API_ROOT --> T_EVENTS
+  end
+
+  UI_3D <-->|JSON fetch| API_ROOT
+  UI_PAN <-->|JSON fetch| API_ROOT
+
+  %% AQARIONZ LAYERS
+
+  subgraph L1["Matter Layer"]
+    direction TB
+    M_JUNK["Junk Nodes<br/>Earth/salt batteries,<br/>alternators, piezo, PV"]:::layer
+    M_BIO["Bio Nodes<br/>Plants, fungi, mycelium,<br/>electrodes in soil"]:::layer
+    M_SPIN["Spin / Quantum Materials<br/>Spintronic stacks,<br/>defect qubits"]:::layer
+  end
+
+  subgraph L2["Signals Layer"]
+    direction TB
+    S_ACOUST["Acoustic Channels<br/>(air, water)"]:::layer
+    S_OPT["Optical Channels<br/>laser → solar cell"]:::layer
+    S_ION["Ionic Channels<br/>fluidic / iontronic"]:::layer
+  end
+
+  subgraph L3["Brains Layer"]
+    direction TB
+    B_CLASS["Classical / LUT / SNN<br/>CMOS, memristive, LUT-LLM"]:::layer
+    B_FLUID["Fluidic / Wetware<br/>iontronic, organoids"]:::layer
+    B_SPINQ["Spintronic / Quantum<br/>spin neurons, QNN blocks"]:::layer
+  end
+
+  subgraph L4["Governance & Multi-Agent Layer"]
+    direction TB
+    G_AGENT["Agents (policy, field, brain)<br/>per-node decision makers"]:::layer
+    G_ROUTE["Routing & Mesh<br/>underwater, optical, RF"]:::layer
+    G_SOV["Sovereign AI Governance<br/>policies, audit, data locality"]:::layer
+  end
+
+  %% INTER-LAYER LINKS
+
+  %% Matter -> Signals
+  M_JUNK -->|vibration, EM, power| S_ACOUST
+  M_JUNK -->|LED / laser| S_OPT
+  M_BIO -->|electrical pulses, chemicals| S_ION
+  M_SPIN -->|magnetization dynamics| S_ACOUST
+
+  %% Signals -> Brains
+  S_ACOUST -->|features| B_CLASS
+  S_OPT -->|waveforms| B_CLASS
+  S_ION -->|reservoir state| B_FLUID
+  S_ACOUST -->|compressed| B_SPINQ
+
+  %% Brains -> Governance
+  B_CLASS -->|anomalies, summaries| G_AGENT
+  B_FLUID -->|pattern signatures| G_AGENT
+  B_SPINQ -->|high-value results| G_AGENT
+
+  G_AGENT -->|actions, config| B_CLASS
+  G_AGENT -->|schedules| B_FLUID
+  G_AGENT -->|escalation| B_SPINQ
+
+  %% Governance -> Matter/Signals
+  G_ROUTE -->|path selection| S_ACOUST
+  G_ROUTE -->|path selection| S_OPT
+  G_SOV -->|policy constraints| G_AGENT
+  G_SOV -->|allow / deny| API_ROOT
+
+  %% BACKEND CONNECTIONS TO LAYERS
+
+  API_GRAPH -. models .- L1
+  API_GRAPH -. models .- L2
+  API_GRAPH -. models .- L3
+  API_AGENTS -. models .- L4
+  API_TELE -. logs .- L1
+  API_TELE -. logs .- L2
+  API_TELE -. logs .- L3
+  API_TELE -. logs .- L4
+
+  %% EXTERNAL CONTEXT
+
+  subgraph EXT["External / Future Integrations"]
+    Q_CLOUD["Quantum / Spin Labs<br/>(remote services)"]:::ext
+    U_AUV["Underwater AUV swarms<br/>low-cost acoustic modems"]:::ext
+  end
+
+  B_SPINQ --- Q_CLOUD
+  G_ROUTE --- U_AUV
+```
+
+This diagram:
+
+- Shows your four AQARIONZ layers and how they interact.  
+- Places the 3D WebUI and Django/DRF backend in front of those layers.  
+- Includes external integrations (quantum labs, underwater AUVs) as extensions.
+
